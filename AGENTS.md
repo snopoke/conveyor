@@ -17,10 +17,10 @@ own `AGENTS.md`; read it before touching that module.
 | Path | What it is |
 | --- | --- |
 | `docs/design.md` | The product and architecture design. The source of truth for *what* to build. |
-| `feature_list.json` | The backlog and the source of truth for feature state. |
-| `claude-progress.md` | Session log and the current verified state. Read first, write last. |
+| `feature_list.json` | The backlog and the source of truth for feature state. Milestones that are fully passing move to `docs/features/`. |
+| `claude-progress.md` | Current verified state and the last 5 sessions. Read first, write last. Older sessions: `docs/progress/`. |
 | `session-handoff.md` | Compact handoff from the most recent session. |
-| `DECISIONS.md` | The human decision queue. Each open entry has a `needs-human` GitHub issue where the human answers. |
+| `DECISIONS.md` | The human decision queue: open entries in full, decided ones as one line each. Each open entry has a `needs-human` GitHub issue where the human answers. Full decided entries: `docs/decisions/archive.md`. |
 | `docs/harness/` | How agents work here: ownership, review rubric, quality grades, checklists. |
 | `docs/adr/` | Architecture decision records. Architecture changes are proposed here, never made silently in code. |
 | `init.sh` | Standard startup and verification path. |
@@ -113,7 +113,12 @@ A feature moves to `passing` only when all are true:
 Run through `docs/harness/clean-state-checklist.md`, then:
 
 1. Update `claude-progress.md` (Current Verified State and a new session entry).
+   It keeps only the last 5 sessions: move older entries, unchanged, to the
+   end of `docs/progress/YYYY-MM.md` (the month of the session).
 2. Update the feature's `status`, `evidence`, and `notes` in `feature_list.json`.
+   Evidence is short pointers (PR link, CI run URL, test names, screenshot
+   path), at most 400 characters each, never pasted output. When every feature
+   of a milestone is `passing`, move them to `docs/features/<milestone>.json`.
 3. Overwrite `session-handoff.md` for the next session.
 4. Record unresolved risks; add any new human questions to `DECISIONS.md`.
 5. Commit and push once the repo is in a safe state. Leave `./init.sh` green.

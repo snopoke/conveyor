@@ -1,8 +1,9 @@
 # Progress Log
 
 Read the Current Verified State at the start of every session; update it and
-add a session entry before you stop. (The filename is a harness convention; any
-agent uses it.)
+add a session entry before you stop. Only the last 5 sessions stay here
+(`check_harness.py` enforces it); older ones move to `docs/progress/YYYY-MM.md`.
+(The filename is a harness convention; any agent uses it.)
 
 ## Current Verified State
 
@@ -69,3 +70,13 @@ agent uses it.)
   - Renamed docs, harness and backlog on `chore/rename-gumption`. Excluded: GitHub URLs (`snopoke/conveyor`), decision history, the progress log, and the files PR #13 owns.
   - Rebuilt PR #13 with `cmd/gumption` and module `github.com/snopoke/gumption`, then re-verified on a fresh clone.
 - The owner renamed the GitHub repository to `snopoke/gumption`. All links in `DECISIONS.md`, `feature_list.json` and the handoff were updated; older session entries above keep the old URLs, which GitHub redirects.
+
+### Session 004 (harness)
+
+- Date: 2026-11-26
+- Goal: keep the files every session reads from growing with the project (owner request).
+- Completed: `DECISIONS.md` keeps open entries in full and decided ones as one line each; the full decided text moved to `docs/decisions/archive.md`. `claude-progress.md` keeps the last 5 sessions; older ones go to `docs/progress/YYYY-MM.md`. Evidence items are capped at 400 characters and 15 per feature. Fully passing milestones move to `docs/features/<milestone>.json`, which `check_harness.py` and `session-brief.sh` also read. `AGENTS.md` end-of-session steps, the clean-state checklist and `docs/harness/README.md` describe the new rules.
+- Verification run: `python3 scripts/check_harness.py` and its unit tests (25, including 12 new canaries). `mise` was not available in this container, so `just check` runs in CI only; no Go code changed.
+- Commits: `chore(harness): cap the size of files read at session start`.
+- Known risk or unresolved issue: PR #17 (open, from the builder session) edits `DECISIONS.md` in the old format; whichever merges second must convert its entry to the one-line form.
+- Next best step: m0-002.

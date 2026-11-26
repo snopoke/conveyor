@@ -7,14 +7,16 @@ echo "Follow AGENTS.md -> Startup workflow."
 sed -n '/^## Current Verified State/,/^## /p' claude-progress.md 2>/dev/null | sed '$d'
 python3 - <<'PY' 2>/dev/null
 import json, re
+import glob
 fs = json.load(open("feature_list.json"))["features"]
-by = {f["id"]: f for f in fs}
+archived = [f for p in sorted(glob.glob("docs/features/*.json")) for f in json.load(open(p))["features"]]
+by = {f["id"]: f for f in fs + archived}
 open_d = set(re.findall(r"^### (D-\d{3}).*\n- \*\*Status:\*\* open", open("DECISIONS.md").read(), re.M))
 prog = [f["id"] + " (" + (f["owner"] or "?") + ")" for f in fs if f["status"] == "in_progress"]
 ready = [f for f in sorted(fs, key=lambda f: f["priority"]) if f["status"] == "not_started"
          and all(by[d]["status"] == "passing" for d in f["depends_on"])]
-done = sum(f["status"] == "passing" for f in fs)
-print(f"Features: {done}/{len(fs)} passing; in progress: {', '.join(prog) or 'none'}")
+done = sum(f["status"] == "passing" for f in fs) + len(archived)
+print(f"Features: {done}/{len(fs) + len(archived)} passing ({len(archived)} archived); in progress: {', '.join(prog) or 'none'}")
 print("Next ready: " + (f"{ready[0]['id']} {ready[0]['title']}" if ready else "none"))
 print(f"Open human decisions: {len(open_d)} ({', '.join(sorted(open_d))})")
 PY
