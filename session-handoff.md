@@ -19,11 +19,11 @@
 
 - Known defect: none known. The reviewer's Revise findings are fixed; a fresh-clone `./init.sh` leaves `git status` clean. The reviewer agent's re-review is Accept. The branch history was rebuilt without the binary (force-pushed at the owner's request).
 - Unverified path: none known. CI `verify` (mise-action + init.sh) passed on PR #13.
-- Risk for the next session: the project is now **Gumption** (D-002). The rename PR (`chore/rename-gumption`) and PR #13 must both merge. After that, `git grep -i conveyor` should only hit GitHub URLs and history. If the owner renames the GitHub repo, update the `snopoke/conveyor` URLs.
+- Risk for the next session: none known. The project is now **Gumption** (D-002, PR #14 merged). `git grep -i conveyor` only finds GitHub URLs (`snopoke/conveyor`), decision history and the progress log. If the owner renames the GitHub repo, update those URLs.
 
 ## Next Best Step
 
-- Highest-priority unfinished feature: m0-001 is waiting for owner review on PR #13. Once it is approved or merged, set it to `passing` (evidence, PR link and CI run are already recorded) and start m0-002 "Strict Go lint with size limits".
+- Highest-priority unfinished feature: m0-002 "Strict Go lint with size limits". m0-001 is `passing` (PR #13 merged).
 - Why it is next: m0-002 depends on m0-001.
 - What counts as passing: m0-002's three verification steps in `feature_list.json`.
 - What must not change during that step: `docs/design.md`, `DECISIONS.md` answers, the feature list rules.

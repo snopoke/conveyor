@@ -10,10 +10,10 @@ agent uses it.)
 - Standard startup path: `./init.sh` (needs mise; installs the toolchain pinned in `mise.toml`)
 - Product name: Gumption (binary `gumption`, module `github.com/snopoke/gumption`). The GitHub repo is still `snopoke/conveyor` until the owner renames it.
 - Standard verification path: `./scripts/verify.sh` → `mise exec -- just check` (harness, gofmt, go build, vet, test)
-- Features passing: 0 / 55
-- m0-001: implemented and verified on `feat/m0-001-toolchain`, PR #13. Still `in_progress` until the owner approves (CI is human-owned).
+- Features passing: 1 / 55 (m0-001)
+- m0-001: `passing` (PR #13 merged by the owner).
 - Open human decisions: none. D-001 and D-003 to D-010 decided (PR #12, merged). D-002 decided by the owner in session: rename to **Gumption** (rename PR on `chore/rename-gumption`, closes #2).
-- Current blocker: none for agents. m0-002 depends on m0-001 being `passing`, so the next session should first check PR #13.
+- Current blocker: none. Next ready feature: m0-002 "Strict Go lint with size limits". The Gumption rename (PR #14) is merged.
 
 ## Session Log
 
