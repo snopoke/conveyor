@@ -1,7 +1,7 @@
-# How agents build Conveyor
+# How agents build Gumption
 
 The harness is the set of files, checks, and habits that let a sequence of
-agent sessions build Conveyor without a human in the loop for routine work. It
+agent sessions build Gumption without a human in the loop for routine work. It
 follows the templates in
 [learn-harness-engineering](https://github.com/walkinglabs/learn-harness-engineering/tree/main/docs/en/resources/templates),
 adapted to the design in `docs/design.md`.

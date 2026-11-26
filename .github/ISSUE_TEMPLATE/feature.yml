@@ -1,5 +1,5 @@
 name: Feature request
-description: Something Conveyor should do. An agent will turn it into feature_list.json entries.
+description: Something Gumption should do. An agent will turn it into feature_list.json entries.
 labels: [feature]
 body:
   - type: textarea
