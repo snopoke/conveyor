@@ -19,7 +19,7 @@ Today, Celery teams choose between Flower (live state, little history, no alerti
 
 - Billing, plans, quotas, or multi-organisation tenancy. One install = one organisation.
 - General APM, log management, or distributed tracing. Conveyor tracks task runs, not spans.
-- Controlling workers (restart, scale, revoke). Read-only in v1; a revoke action is an open question.
+- Controlling workers (restart, scale, revoke, purge). Conveyor stays read-only (decided: D-004).
 
 ### Requirement coverage
 
@@ -184,7 +184,7 @@ Wait time compares a producer's clock with a worker's clock. The server records 
 
 ## Storage and query
 
-High-volume, append-only task data lives in ClickHouse; low-volume, relational, transactional data lives in PostgreSQL. Each store is behind a port, so a second event store (e.g. a Postgres/TimescaleDB "lite" mode) can be added later without touching Query or the API.
+High-volume, append-only task data lives in ClickHouse; low-volume, relational, transactional data lives in PostgreSQL. Each store is behind a port, so a second event store can be added without touching Query or the API. v1 ships a PostgreSQL/TimescaleDB "lite" `EventStore` for small installs alongside the ClickHouse default (decided: D-003; feature m4-010).
 
 ### ClickHouse tables
 
@@ -390,7 +390,7 @@ Plugins are compiled-in Go implementations of small, stable interfaces, register
 | --- | --- | --- |
 | `Notifier` | `Validate(cfg) error`; `Send(ctx, Notification) (DeliveryRef, error)`; `Update(ctx, ref, Notification) error` | Slack, Instatus, webhook, email |
 | `BrokerProbe` | `Queues(ctx) ([]string, error)`; `Depth(ctx, queues) (map[string]int64, error)` | Redis, RabbitMQ, SQS |
-| `IngestDecoder` | `Decode(r io.Reader) iter.Seq2[domain.Event, error]` | Conveyor NDJSON v1; Celery event-stream listener; OTLP (later) |
+| `IngestDecoder` | `Decode(r io.Reader) iter.Seq2[domain.Event, error]` | Conveyor NDJSON v1; Celery event-stream listener; OTLP (community plugin, D-005) |
 | `AuthProvider` | `Begin(w, r)`; `Complete(r) (Identity, error)` | Password, OIDC |
 | `EventStore` | `Write(ctx, []Event)`; `Query(ctx, MetricQuery) (Series, error)`; `ListRuns(ctx, RunListQuery) (Page, error)` | ClickHouse |
 | `SecretStore` | `Get(ctx, ref) ([]byte, error)` | Env-key encryption in Postgres; Vault (later) |
@@ -428,7 +428,7 @@ The stack favours tools with strict compilers, generated contracts, fast feedbac
 - **Rust** would be faster still but compiles slowly and is harder for models to get right on the first pass; the slower edit-compile loop works against agent productivity.
 - **TypeScript end to end** (Node server) would share types with the UI, but generated clients from OpenAPI already give that benefit without Node's runtime overhead on ingest.
 - **HTMX + Alpine.js** keeps the UI server-rendered and simple, but would create a second, private interface beside the API. An API-native product is better served by a client of its own public API.
-- **TimescaleDB instead of ClickHouse** would mean one database to run. It is the leading candidate for a later "lite" `EventStore` for small installs; ClickHouse remains the default for its rollup and quantile performance.
+- **TimescaleDB instead of ClickHouse** would mean one database to run. It backs the v1 "lite" `EventStore` for small installs (D-003); ClickHouse remains the default for its rollup and quantile performance.
 
 ## AI ownership and guardrails
 
@@ -491,7 +491,7 @@ The default install is `docker compose up` with three containers: `conveyor`, `p
 - **Retention:** per-table TTLs set from config; `conveyor storage usage` reports size per project and table.
 - **Backups:** documented recipes for `pg_dump` and ClickHouse `BACKUP`; Postgres holds everything that cannot be regenerated, so it is the one that matters most.
 - **Releases:** semantic versioning, signed multi-arch images, SBOM attached, changelog generated from conventional commits.
-- **Licence:** Apache-2.0 proposed (see open questions).
+- **Licence:** Apache-2.0 (decided: D-001).
 
 ### Documentation plan
 
@@ -537,10 +537,13 @@ M1 alone replaces Flower for a Celery team; each later milestone is independentl
 
 ### Open questions
 
-- Licence: Apache-2.0 (maximum adoption) or AGPL-3.0 (protects against closed hosted forks)?
-- Name: "Conveyor" is a working name and needs a collision check before any public repo.
-- Should v1 include a lite single-database mode, or is ClickHouse an acceptable hard requirement?
-- Read-only forever, or add worker actions (revoke a run, purge a queue) behind a project-admin permission?
-- Accept OpenTelemetry (OTLP) task spans as an ingest format in M4, or leave it to a community plugin?
-- Which project is the pilot, and who on that team owns the gate reviews?
-- Which Celery versions and pool types are in the supported matrix for 1.0?
+- Name: "Conveyor" is a working name and needs a collision check before any public repo (D-002).
+
+Resolved (answers recorded in `DECISIONS.md`):
+
+- Licence: Apache-2.0 (D-001).
+- Lite single-database mode: included in v1 as a PostgreSQL/TimescaleDB `EventStore`; ClickHouse stays the default (D-003).
+- Worker actions: none; Conveyor stays read-only (D-004).
+- OTLP ingest: left to a community plugin on the `IngestDecoder` port; not a core feature (D-005).
+- Pilot: open-chat-studio; gate reviewer: snopoke (D-006).
+- Celery matrix for 1.0: Celery 5.3, 5.4, 5.5 × prefork, threads, gevent, solo on Python 3.10–3.13; eventlet is not supported (D-007).

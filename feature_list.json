@@ -482,10 +482,10 @@
       "depends_on": [
         "m1-009"
       ],
-      "human_gate": "Supported Celery matrix needs a human answer: D-007 (agents use the recommended default meanwhile)",
+      "human_gate": "None: Celery matrix decided in D-007 (Celery 5.3, 5.4, 5.5 × prefork, threads, gevent, solo on Python 3.10–3.13)",
       "verification": [
         "Signal-to-event mapping per docs/design.md tested with a real Celery worker in tests.",
-        "Conformance suite passes across the Celery version/pool matrix (see D-007).",
+        "Conformance suite passes across the Celery version/pool matrix decided in D-007: Celery 5.3, 5.4, 5.5 × prefork, threads, gevent, solo on Python 3.10–3.13.",
         "5-minute Celery quickstart doc."
       ],
       "evidence": [],
@@ -609,7 +609,7 @@
         "m1-010",
         "m1-015"
       ],
-      "human_gate": "Pilot project and gate reviewer: D-006",
+      "human_gate": "Pilot open-chat-studio; snopoke confirms the gate (D-006)",
       "verification": [
         "Pilot deployed and sending events (human confirms).",
         "Evaluator rubric run on M1; quality document updated."
@@ -774,7 +774,7 @@
       "depends_on": [
         "m2-007"
       ],
-      "human_gate": "Pilot confirmation: D-006",
+      "human_gate": "Pilot open-chat-studio; snopoke confirms the gate (D-006)",
       "verification": [
         "Self-metrics show zero dropped events over 7 days (human confirms).",
         "Evaluator rubric and quality document updated."
@@ -961,7 +961,7 @@
         "m3-006",
         "m3-008"
       ],
-      "human_gate": "Pilot confirmation: D-006",
+      "human_gate": "Pilot open-chat-studio; snopoke confirms the gate (D-006)",
       "verification": [
         "Human confirms.",
         "Evaluator rubric and quality document updated."
@@ -1057,7 +1057,7 @@
       "depends_on": [
         "m3-009"
       ],
-      "human_gate": "Package publishing needs a human-owned npm account: D-008",
+      "human_gate": "Publishing via npm trusted publishing from GitHub Actions (D-008); the owner creates the npm package once the name is settled (D-002)",
       "verification": [
         "Passes the shared SDK conformance suite."
       ],
@@ -1115,7 +1115,7 @@
         "m4-004",
         "m4-006"
       ],
-      "human_gate": "Licence D-001 and name D-002 must be decided; publishing credentials D-008",
+      "human_gate": "Name D-002 must be decided before any publish; licence is Apache-2.0 (D-001); images to GHCR signed with keyless cosign, PyPI/npm via trusted publishing (D-008); human approves the PR (CODEOWNERS)",
       "verification": [
         "Dry-run release in CI.",
         "Migration test from previous release schema snapshot."
@@ -1124,9 +1124,32 @@
       "notes": ""
     },
     {
-      "id": "m4-009",
+      "id": "m4-010",
       "milestone": "M4",
       "priority": 54,
+      "area": "eventstore",
+      "title": "Lite EventStore on PostgreSQL/TimescaleDB",
+      "user_visible_behavior": "An operator sets `eventstore: postgres` (lite mode) and runs Conveyor with PostgreSQL only, no ClickHouse; every screen, API endpoint and alert works the same, with documented volume limits.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": "SQL migrations and the ADR choosing the lite engine: human approves the PRs (CODEOWNERS). Scope decided in D-003.",
+      "verification": [
+        "ADR in docs/adr/ fixes the lite engine (plain PostgreSQL vs the TimescaleDB extension), its rollup strategy and supported volume.",
+        "The postgres EventStore adapter passes the same EventStore conformance suite as the ClickHouse adapter, including the merge-rule permutation test against domain.Merge.",
+        "No change in Query, the API or the UI is needed (import rules unchanged; diff touches only the adapter, migrations, config and docs).",
+        "Compose profile without ClickHouse starts; `conveyor sim` data renders on the overview and task list (Playwright screenshots).",
+        "Docs page: when to choose lite mode, its limits, and how to migrate to ClickHouse."
+      ],
+      "evidence": [],
+      "notes": "Added when D-003 was answered (owner chose B: lite mode in v1)."
+    },
+    {
+      "id": "m4-009",
+      "milestone": "M4",
+      "priority": 55,
       "area": "gate",
       "title": "1.0 exit gate",
       "user_visible_behavior": "Docs complete, upgrade from M3 tested, public 1.0 release.",
@@ -1138,7 +1161,8 @@
         "m4-003",
         "m4-005",
         "m4-007",
-        "m4-008"
+        "m4-008",
+        "m4-010"
       ],
       "human_gate": "Human approves public release",
       "verification": [
