@@ -2,7 +2,7 @@
 # Prints a short brief at session start (wired as a Claude Code SessionStart
 # hook in .claude/settings.json). Read-only and fast.
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 0
-echo "== Conveyor session brief =="
+echo "== Gumption session brief =="
 echo "Follow AGENTS.md -> Startup workflow."
 sed -n '/^## Current Verified State/,/^## /p' claude-progress.md 2>/dev/null | sed '$d'
 python3 - <<'PY' 2>/dev/null

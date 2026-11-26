@@ -5,7 +5,7 @@
 - **Proposed by:** harness setup session
 
 ## Context
-`docs/design.md` sets the goal that Conveyor is built and maintained primarily
+`docs/design.md` sets the goal that Gumption is built and maintained primarily
 by AI agents, with humans owning contracts and direction. Agent sessions are
 stateless and short; without durable state and mechanical rules, work drifts
 and verification is claimed rather than performed.

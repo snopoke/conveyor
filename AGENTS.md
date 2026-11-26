@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Conveyor is a self-hosted observability service for background task queues
+Gumption is a self-hosted observability service for background task queues
 (Celery first, any queue through an SDK): one Go binary, PostgreSQL for
 metadata, ClickHouse for events, and a React UI that uses only the public API.
 
@@ -27,7 +27,7 @@ own `AGENTS.md`; read it before touching that module.
 | `scripts/verify.sh` | Standard verification path (`just check` once it exists). |
 
 Planned code layout (created during M0; see `docs/design.md` → Repository
-layout): `cmd/conveyor/`, `internal/<module>/` (each with `port.go` and
+layout): `cmd/gumption/`, `internal/<module>/` (each with `port.go` and
 `AGENTS.md`), `plugins/<port>/<name>/`, `api/openapi.yaml`, `schema/`, `web/`,
 `sdk/python/`, `docs/`.
 
@@ -65,7 +65,7 @@ Before writing code:
   rule is in your way, write an ADR proposal; do not work around it.
 - Prefer durable repo artifacts (tests, ADRs, docs, the progress log) over
   chat summaries. Anything not in the repo is lost when your session ends.
-- Verify UI work visually (Playwright screenshots against `conveyor sim`
+- Verify UI work visually (Playwright screenshots against `gumption sim`
   data), not by assertion that it works.
 
 ## Decide or escalate
