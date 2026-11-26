@@ -21,8 +21,8 @@
       "area": "tooling",
       "title": "Go module, binary entrypoint, mise + just",
       "user_visible_behavior": "A developer or agent runs `just check` and `go run ./cmd/conveyor version` from a fresh clone; init.sh and verify.sh delegate to `just check`.",
-      "status": "not_started",
-      "owner": null,
+      "status": "in_progress",
+      "owner": "feat/m0-001-toolchain",
       "depends_on": [],
       "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
       "verification": [
