@@ -13,7 +13,7 @@ agent uses it.)
 - Features passing: 1 / 55 (m0-001)
 - m0-001: `passing` (PR #13 merged by the owner).
 - Open human decisions: none. D-001 and D-003 to D-010 decided (PR #12, merged). D-002 decided by the owner in session: rename to **Gumption** (rename PR on `chore/rename-gumption`, closes #2).
-- Current blocker: none. Next ready feature: m0-002 "Strict Go lint with size limits". The rename PR #14 is waiting for owner review.
+- Current blocker: none. Next ready feature: m0-002 "Strict Go lint with size limits". The Gumption rename (PR #14) is merged.
 
 ## Session Log
 
