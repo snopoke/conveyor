@@ -69,3 +69,15 @@ agent uses it.)
   - Renamed docs, harness and backlog on `chore/rename-gumption`. Excluded: GitHub URLs (`snopoke/conveyor`), decision history, the progress log, and the files PR #13 owns.
   - Rebuilt PR #13 with `cmd/gumption` and module `github.com/snopoke/gumption`, then re-verified on a fresh clone.
 - The owner renamed the GitHub repository to `snopoke/gumption`. All links in `DECISIONS.md`, `feature_list.json` and the handoff were updated; older session entries above keep the old URLs, which GitHub redirects.
+
+### Session 004
+
+- Date: 2026-11-26
+- Goal: Owner asked why they were merging every PR. Make the harness say who merges.
+- Completed: `AGENTS.md` → Pull requests now says the builder merges PRs that touch only agent-owned paths (green CI + reviewer Accept recorded in the PR), the human merges PRs that touch CODEOWNERS paths, and bookkeeping travels in the feature PR instead of a PR of its own. Same rule mirrored in `docs/harness/README.md` (roles, loop), `docs/harness/ownership.md` (Who merges), `docs/harness/clean-state-checklist.md`, and the PR template.
+- Why: PRs #11 to #14 touched human-owned paths, so the owner's merge was by design. PRs #15 and #16 touched only bookkeeping files and still waited for the owner, because no rule told the builder to merge and bookkeeping had its own PRs.
+- Verification run: `./init.sh` (`harness: ok`, 15 harness tests, go build/vet/test).
+- Commits: `docs(harness): say who merges each PR` on `sk/elegant-cori-xxavz8`.
+- Known risk or unresolved issue: agents act through the owner's GitHub account, so they cannot approve a PR. If branch protection on `main` requires an approving review on every PR, the builder's merge of an agent-owned PR will be refused; the rule then says to leave the PR ready and note it in the handoff. Only the owner can check or change that setting. This PR itself touches human-owned paths, so the owner merges it.
+- Next best step: m0-002.
+
