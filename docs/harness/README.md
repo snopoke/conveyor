@@ -17,7 +17,8 @@ adapted to the design in `docs/design.md`.
    the verification steps ran and the evidence is recorded.
 4. **Humans own contracts and direction; agents own everything behind them.**
    See `ownership.md`.
-5. **Ask rarely, never block.** Escalations go to `DECISIONS.md` with a
+5. **Ask rarely, never block.** Escalations go to `DECISIONS.md` (mirrored as a
+   `needs-human` issue so the human is notified) with a
    reversible default so work continues.
 
 ## Roles
@@ -58,7 +59,7 @@ pick feature ─▶ contract first? ──yes──▶ edit contract, regenerate
 | `feature_list.json` | Backlog and feature state | Builders |
 | `claude-progress.md` | Current verified state + session log | Every session |
 | `session-handoff.md` | Compact note for the very next session | Every session (overwritten) |
-| `DECISIONS.md` | Human decision queue | Agents ask, human answers |
+| `DECISIONS.md` + `needs-human` issues | Human decision queue | Agents ask in both; human answers on the issue |
 | `docs/harness/evaluator-rubric.md` | Review scorecard | Reviewer uses; gardener tunes |
 | `docs/harness/quality-document.md` | Codebase health grades over time | Gardener |
 | `docs/harness/clean-state-checklist.md` | End-of-session checklist | Every session |

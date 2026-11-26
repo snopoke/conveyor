@@ -20,7 +20,7 @@ own `AGENTS.md`; read it before touching that module.
 | `feature_list.json` | The backlog and the source of truth for feature state. |
 | `claude-progress.md` | Session log and the current verified state. Read first, write last. |
 | `session-handoff.md` | Compact handoff from the most recent session. |
-| `DECISIONS.md` | The human decision queue: open questions only a human can answer, and answers given. |
+| `DECISIONS.md` | The human decision queue. Each open entry has a `needs-human` GitHub issue where the human answers. |
 | `docs/harness/` | How agents work here: ownership, review rubric, quality grades, checklists. |
 | `docs/adr/` | Architecture decision records. Architecture changes are proposed here, never made silently in code. |
 | `init.sh` | Standard startup and verification path. |
@@ -37,7 +37,9 @@ Before writing code:
 
 1. `pwd` — confirm you are at the repository root.
 2. Read `claude-progress.md` (Current Verified State) and `session-handoff.md`.
-3. Read `DECISIONS.md`. Apply any newly answered decisions before other work.
+3. Read `DECISIONS.md`, then the owner's comments on open `needs-human`
+   GitHub issues. Record and apply new answers before other work (the
+   procedure is at the top of `DECISIONS.md`).
 4. `git log --oneline -10`.
 5. Run `./init.sh`. If baseline verification fails, fixing it **is** your task.
    Do not stack new work on a broken baseline.
@@ -78,7 +80,9 @@ choice:
 4. is a product or strategy question that `docs/design.md` does not settle.
 
 To escalate: add an entry to `DECISIONS.md` using its template, with options,
-your recommendation, and a **reversible default** you will follow meanwhile.
+your recommendation, and a **reversible default** you will follow meanwhile,
+and open its `needs-human` GitHub issue so the human is notified. Never ask
+the human in PR comments, other issues, or chat.
 If a safe default exists, keep working on it. If none exists, set the feature
 to `blocked`, reference the decision ID in `notes`, and move to the next
 unblocked feature. Never stop the session just to wait for an answer.
