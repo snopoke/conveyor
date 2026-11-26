@@ -25,10 +25,10 @@ adapted to the design in `docs/design.md`.
 
 | Role | Started by | Does |
 | --- | --- | --- |
-| Builder | schedule or human | Runs the startup workflow in `AGENTS.md`, takes the next feature, opens a PR. |
+| Builder | schedule or human | Runs the startup workflow in `AGENTS.md`, takes the next feature, opens one PR for it (code and bookkeeping together), and merges it after the reviewer's Accept when it touches only agent-owned paths. |
 | Reviewer | a builder's PR | A *separate* session reviews the PR against `evaluator-rubric.md` and the touched modules' `AGENTS.md`. It never reviews its own work. Posts Accept, Revise, or Block with reasons. |
 | Gardener | every ~10 merged features, or when quality grades drop | Updates `quality-document.md`, removes dead code and stale docs, proposes harness simplifications, re-tunes the rubric. Does not add features. |
-| Human owner | `DECISIONS.md`, CODEOWNERS review requests | Answers decisions, approves PRs on human-owned paths, confirms milestone gates. |
+| Human owner | `DECISIONS.md`, CODEOWNERS review requests | Answers decisions, approves and merges PRs on human-owned paths, confirms milestone gates. Does not need to merge anything else. |
 
 ## The loop
 
@@ -42,14 +42,27 @@ pick feature ─▶ contract first? ──yes──▶ edit contract, regenerate
      │          run verification, record evidence
      │                │
      │                ▼
+     │          update progress log, handoff, feature_list.json
+     │                │
+     │                ▼
      │          open PR ─▶ reviewer agent ─▶ Revise? back to builder
      │                │ Accept
      │                ▼
-     │          human-owned path? ──yes──▶ wait for CODEOWNERS approval
+     │          commit `passing` + evidence to the same PR
+     │                │
+     │                ▼
+     │          human-owned path? ──yes──▶ mark ready; the human merges
      │                │ no
      │                ▼
-     └──────── merge, update progress log + feature_list.json
+     └──────── builder merges the PR
 ```
+
+Who merges is decided only by the paths the PR touches, as listed in
+`.github/CODEOWNERS`. The human should never have to merge a PR that touches
+none of them. Agents act through the owner's GitHub account, so they cannot
+give an approving review; the reviewer's verdict is recorded in the PR
+description instead, and branch protection must not require an approval on
+every PR (only code-owner review and passing CI).
 
 ## Files
 

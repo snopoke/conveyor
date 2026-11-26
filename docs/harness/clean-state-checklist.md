@@ -11,4 +11,5 @@ must be written in `claude-progress.md`.
 - [ ] `session-handoff.md` is rewritten for the next session.
 - [ ] New human questions are in `DECISIONS.md` with a default.
 - [ ] No half-finished step is undocumented.
-- [ ] Work is committed and pushed; a PR exists for it.
+- [ ] Work is committed and pushed to one PR, bookkeeping included.
+- [ ] That PR is merged (agent-owned paths only, green CI, reviewer Accept), or it is ready and waiting for the human because it touches human-owned paths, or the reason it is neither is in `session-handoff.md`.
