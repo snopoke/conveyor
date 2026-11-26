@@ -20,19 +20,29 @@
       "priority": 1,
       "area": "tooling",
       "title": "Go module, binary entrypoint, mise + just",
-      "user_visible_behavior": "A developer or agent runs `just check` and `go run ./cmd/conveyor version` from a fresh clone; init.sh and verify.sh delegate to `just check`.",
-      "status": "not_started",
-      "owner": null,
+      "user_visible_behavior": "A developer or agent runs `just check` and `go run ./cmd/gumption version` from a fresh clone; init.sh and verify.sh delegate to `just check`.",
+      "status": "in_progress",
+      "owner": "feat/m0-001-toolchain",
       "depends_on": [],
       "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
       "verification": [
         "`mise install` installs pinned Go, Node, just, golangci-lint, and Python versions from mise.toml.",
-        "`go run ./cmd/conveyor version` prints a version string.",
+        "`go run ./cmd/gumption version` prints a version string.",
         "`just check` runs scripts/check_harness.py, go build, go vet, and go test ./... and exits 0.",
         "`./init.sh` exits 0 and its output shows it ran `just check`."
       ],
-      "evidence": [],
-      "notes": ""
+      "evidence": [
+        "2026-11-26, fresh `git clone` of feat/m0-001-toolchain (Gumption names): `mise install` → go 1.27.4, node 26.13.1, python 3.13.18, just 1.59.0, golangci-lint 2.15.0, all pinned exactly in mise.toml.",
+        "`mise exec -- go run ./cmd/gumption version` → `gumption dev`, exit 0. `just build-bin && ./bin/gumption version` → `gumption <git describe> (<revision>)`.",
+        "`mise exec -- just check` → exit 0; runs `harness` (scripts/check_harness.py + 15 unittest), `fmt-check`, `go build -o /dev/null ./...`, `go vet ./...`, `go test ./...` (TestRun, TestVersionStringStamped in cmd/gumption/main_test.go) → `ok github.com/snopoke/gumption/cmd/gumption`.",
+        "`./init.sh` → exit 0; output contains `==> just check`, `harness: ok`, `go build -o /dev/null ./...`, `go vet ./...`, `go test ./...`, `ok github.com/snopoke/gumption/cmd/gumption`; `git status --porcelain` empty afterwards (no binary written).",
+        "Canaries (temporary, removed), each made `mise exec -- just check` exit non-zero: `printf 'package main\\nfunc  x() {}\\n' > cmd/<pkg>/zz.go` (gofmt); a `zz_test.go` with `t.Fatal(\"canary\")` (test); `fmt.Printf(\"%d\\n\", \"x\")` in zz.go (vet); a feature with status `bogus` (harness).",
+        "Edge cases: deleted-but-indexed .go → fmt-check exit 0; no Go files → fmt-check and fmt exit 0; misformatted `cmd/sp ace/m.go` → fmt-check exit 1, clean after `just fmt`; `just run \"bad arg\"` → `unknown command \"bad arg\"`.",
+        "CI `verify` (jdx/mise-action@v5 + ./init.sh) green on PR #13 before the rebuild (runs 45836028958, 45836640537, 45836663063); re-runs on the rebuilt head.",
+        "Reviewer agent (rubric): first pass Revise (stray committed binary, loose Python pin, gofmt recipe edge cases, `mise env` failure handling, handoff accuracy), all fixed; re-review on c883310: Accept (Correctness 2, Verification 2, Scope 2, Guardrails 2, Reliability 2, Maintainability 2, Handoff 1 → fixed).",
+        "History rebuilt and force-pushed at the owner's request (2026-11-26) so the stray binary is in no commit; binary/module renamed to gumption after D-002 was decided. PR: https://github.com/snopoke/conveyor/pull/13"
+      ],
+      "notes": "Implemented, verified and reviewer-accepted. Waiting on the owner's CODEOWNERS approval (touches .github/workflows/ci.yml). Not `passing` until merged. Pairs with the rename PR (chore/rename-gumption); either can merge first."
     },
     {
       "id": "m0-002",

@@ -1,0 +1,12 @@
+# Pinned toolchain. `mise install` gives every laptop, CI runner and agent
+# sandbox the same versions. Bump deliberately, in its own PR.
+[tools]
+go = "1.27.4"
+node = "26.13.1"
+python = "3.13.18"
+just = "1.59.0"
+golangci-lint = "2.15.0"
+
+[settings]
+# Python from mise uses prebuilt binaries; never compile from source in CI.
+python.compile = false

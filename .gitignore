@@ -1,5 +1,7 @@
 # Build output
 /bin/
+# `go build` in the root writes the binary here; never commit it.
+/gumption
 /dist/
 /web/dist/
 /web/node_modules/
