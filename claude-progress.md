@@ -26,3 +26,15 @@ agent uses it.)
 - Files or artifacts updated: all of the above.
 - Known risk or unresolved issue: CODEOWNERS is advisory until branch protection is enabled (D-010). No agent scheduling exists yet (D-009). The architecture diagram in `docs/design.md` is an ASCII redraw of the original.
 - Next best step: m0-001.
+
+### Session 002
+
+- Date: 2026-11-26
+- Goal: Make the human decision queue notify the owner and accept answers as GitHub issue comments.
+- Completed: Created `main` from the harness commit. Opened issues #1–#10 (label `needs-human`, assigned to the owner) mirroring D-001–D-010; added an **Issue** field to every entry; documented the ask / collect-answers / follow-up procedure at the top of `DECISIONS.md`; `AGENTS.md` startup step 3 and the escalation rule now include the issues; `check_harness.py` requires open decisions to have an issue link (or `pending`).
+- Verification run: `./scripts/verify.sh`.
+- Evidence captured: `harness: ok`; 15 unit tests pass, including the new `test_open_decision_needs_issue` canary.
+- Commits: `chore(harness): mirror decisions as needs-human issues`.
+- Files or artifacts updated: `DECISIONS.md`, `AGENTS.md`, `docs/harness/README.md`, `scripts/check_harness.py`, `scripts/test_check_harness.py`, `.github/ISSUE_TEMPLATE/needs-human.yml`.
+- Known risk or unresolved issue: only comments by `snopoke` count as answers; agents must check the comment author. Same open risks as Session 001 (D-009, D-010).
+- Next best step: m0-001.

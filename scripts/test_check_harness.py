@@ -94,6 +94,11 @@ class CheckHarnessTest(unittest.TestCase):
         p.write_text(p.read_text() + "\n### D-900 No status here\n- **Question:** ?\n")
         self.assertTrue(any("D-900 lacks" in e for e in check_harness.check(self.tmp)))
 
+    def test_open_decision_needs_issue(self):
+        p = self.tmp / "DECISIONS.md"
+        p.write_text(p.read_text() + "\n### D-901 No issue\n- **Status:** open\n- **Question:** ?\n")
+        self.assertTrue(any("D-901 lacks a '- **Issue:**" in e for e in check_harness.check(self.tmp)))
+
 
 if __name__ == "__main__":
     unittest.main()

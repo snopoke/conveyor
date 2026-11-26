@@ -1,5 +1,5 @@
 name: Needs a human decision
-description: A question agents cannot answer. Mirror of an entry in DECISIONS.md.
+description: A question only the owner can answer. Mirror of an entry in DECISIONS.md; answer by commenting.
 labels: [needs-human]
 body:
   - type: input

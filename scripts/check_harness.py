@@ -54,6 +54,7 @@ MODULE_AGENTS_MAX_LINES = 150
 DECISION_HEADING = re.compile(r"^### (D-\d{3})\b", re.M)
 DECISION_STATUS = re.compile(r"^- \*\*Status:\*\* (open|decided|superseded)\b", re.M)
 DECISION_REF = re.compile(r"\bD-\d{3}\b")
+DECISION_ISSUE = re.compile(r"^- \*\*Issue:\*\* (https://github\.com/\S+/issues/\d+|pending)\s*$", re.M)
 
 
 def check(root: Path) -> list[str]:
@@ -84,6 +85,8 @@ def _decisions(root: Path, errors: list[str]) -> set[str]:
     for did, body in zip(sections[::2], sections[1::2]):
         if not DECISION_STATUS.search(body):
             errors.append(f"DECISIONS.md: {did} lacks a '- **Status:** open|decided|superseded' line")
+        elif DECISION_STATUS.search(body).group(1) == "open" and not DECISION_ISSUE.search(body):
+            errors.append(f"DECISIONS.md: open {did} lacks a '- **Issue:** <issue URL>|pending' line")
     return set(ids)
 
 
