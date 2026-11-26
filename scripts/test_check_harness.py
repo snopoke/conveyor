@@ -43,15 +43,16 @@ class CheckHarnessTest(unittest.TestCase):
         self.assertEqual(check_harness.check(REPO), [])
 
     def test_passing_requires_evidence(self):
-        self.assertFires(lambda fs: fs[0].update(status="passing"), "requires recorded evidence")
+        self.assertFires(lambda fs: fs[0].update(status="passing", evidence=[]), "requires recorded evidence")
 
     def test_passing_requires_passing_dependencies(self):
         def m(fs):
+            fs[0].update(status="not_started")
             fs[1].update(status="passing", evidence=["x"])
         self.assertFires(m, "dependency m0-001 is not")
 
     def test_in_progress_requires_owner(self):
-        self.assertFires(lambda fs: fs[0].update(status="in_progress"), "requires an owner")
+        self.assertFires(lambda fs: fs[0].update(status="in_progress", owner=None), "requires an owner")
 
     def test_one_in_progress_per_owner(self):
         def m(fs):

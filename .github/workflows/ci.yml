@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      # m0-001 adds mise here so the pinned toolchain matches local runs.
+      # Installs the toolchain pinned in mise.toml (Go, Node, Python, just,
+      # golangci-lint), so CI matches local and agent runs exactly.
+      - uses: jdx/mise-action@v5
       - name: Standard startup and verification path
         run: ./init.sh
