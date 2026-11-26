@@ -1,0 +1,12 @@
+name: Needs a human decision
+description: A question agents cannot answer. Mirror of an entry in DECISIONS.md.
+labels: [needs-human]
+body:
+  - type: input
+    id: decision
+    attributes: {label: Decision ID, description: "The D-NNN entry in DECISIONS.md"}
+    validations: {required: true}
+  - type: textarea
+    id: question
+    attributes: {label: Question, description: Options, recommendation, and the default agents follow meanwhile}
+    validations: {required: true}

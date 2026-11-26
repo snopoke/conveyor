@@ -1,0 +1,11 @@
+name: Feature request
+description: Something Conveyor should do. An agent will turn it into feature_list.json entries.
+labels: [feature]
+body:
+  - type: textarea
+    id: behaviour
+    attributes: {label: User-visible behaviour, description: What a user sees when this works}
+    validations: {required: true}
+  - type: textarea
+    id: acceptance
+    attributes: {label: How to verify, description: Steps that prove it works}

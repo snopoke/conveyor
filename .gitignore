@@ -1,0 +1,23 @@
+# Build output
+/bin/
+/dist/
+/web/dist/
+/web/node_modules/
+coverage.out
+*.test
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local environment
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+.DS_Store
+
+# Playwright / test artifacts (evidence that matters is committed under docs/evidence/)
+/test-results/
+/playwright-report/

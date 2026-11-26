@@ -1,0 +1,1151 @@
+{
+  "project": "conveyor",
+  "last_updated": "2026-11-26",
+  "rules": {
+    "single_active_feature_per_owner": true,
+    "passing_requires_evidence": true,
+    "do_not_skip_verification": true,
+    "human_gate_meaning": "What a human must approve or answer. The feature may still be worked on; its PR waits for that approval. If the gate cites an open D-xxx with no default, the feature is blocked."
+  },
+  "status_legend": {
+    "not_started": "Work has not begun.",
+    "in_progress": "Active; 'owner' is the branch doing it.",
+    "blocked": "Cannot continue until the blocker in 'notes' is resolved.",
+    "passing": "Required verification passed and evidence is recorded."
+  },
+  "features": [
+    {
+      "id": "m0-001",
+      "milestone": "M0",
+      "priority": 1,
+      "area": "tooling",
+      "title": "Go module, binary entrypoint, mise + just",
+      "user_visible_behavior": "A developer or agent runs `just check` and `go run ./cmd/conveyor version` from a fresh clone; init.sh and verify.sh delegate to `just check`.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [],
+      "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "`mise install` installs pinned Go, Node, just, golangci-lint, and Python versions from mise.toml.",
+        "`go run ./cmd/conveyor version` prints a version string.",
+        "`just check` runs scripts/check_harness.py, go build, go vet, and go test ./... and exits 0.",
+        "`./init.sh` exits 0 and its output shows it ran `just check`."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-002",
+      "milestone": "M0",
+      "priority": 2,
+      "area": "guardrails",
+      "title": "Strict Go lint with size limits",
+      "user_visible_behavior": "`just check` fails on lint violations, files over 500 lines, and functions over 80 lines.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-001"
+      ],
+      "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Commit a .golangci.yml with the strict preset from docs/design.md (errcheck, gosec, exhaustive, no naked goroutines outside platform, funlen 80, file length 500).",
+        "Add a canary: a temporary file with an 81-line function makes `just check` fail; record the failing output in evidence; remove the canary.",
+        "`just check` exits 0 on the clean tree."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-003",
+      "milestone": "M0",
+      "priority": 3,
+      "area": "architecture",
+      "title": "Module skeletons with ports and enforced import rules",
+      "user_visible_behavior": "Every module in the Architecture table exists under internal/ with port.go and an AGENTS.md, and CI rejects any import not in the table.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-002"
+      ],
+      "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "internal/{platform,domain,ingest,eventstore,metastore,query,identity,alerting,notify,probes,api} each have port.go and AGENTS.md (from docs/harness/module-agents-template.md, under 150 lines).",
+        "A .go-arch-lint.yml encodes exactly the 'May import' column of docs/design.md → Modules and boundaries.",
+        "Canary: adding an import from internal/domain to internal/ingest makes `just check` fail; record output; revert.",
+        "`just check` exits 0."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-004",
+      "milestone": "M0",
+      "priority": 4,
+      "area": "domain",
+      "title": "Event protocol v1 schema and domain event types",
+      "user_visible_behavior": "schema/event.v1.json describes the wire event from docs/design.md, and Go domain types validate events against the same rules.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-003"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "schema/event.v1.json (JSON Schema) covers every field in the design's example event, the eight event types, tag limits (32 keys, 64-char keys, 200-char values), and stack truncation limits.",
+        "Fixture events under schema/fixtures/ (valid and invalid) are validated by both the JSON Schema and domain.Validate in a Go test; results agree on every fixture.",
+        "`just check` exits 0."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-005",
+      "milestone": "M0",
+      "priority": 5,
+      "area": "domain",
+      "title": "Run merge rules with property-based tests",
+      "user_visible_behavior": "Events for a run merge to the same run state regardless of order or duplication.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-004"
+      ],
+      "human_gate": null,
+      "verification": [
+        "domain.Merge implements: earliest enqueued_at/started_at, latest finished_at, state by highest lifecycle rank with ties by timestamp, duplicates collapse on event_id.",
+        "Property-based tests (testing/quick or rapid) prove commutativity, associativity, and idempotence over randomly generated event sets.",
+        "Derived states stale and lost are not settable by events (test).",
+        "Coverage for internal/domain is at least 90%.",
+        "`just check` exits 0."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-006",
+      "milestone": "M0",
+      "priority": 6,
+      "area": "api",
+      "title": "OpenAPI skeleton with generated server and drift check",
+      "user_visible_behavior": "api/openapi.yaml exists with /healthz, /readyz and the shared conventions; Go server stubs are generated from it, and CI fails if generated code is stale.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-003"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "api/openapi.yaml (3.1) defines conventions from docs/design.md → API design: /api/v1 prefix, RFC 9457 problem details, cursor pagination components, x-permission on every operation.",
+        "oapi-codegen strict-server output is generated by `just gen`; `just check` regenerates and fails on any git diff.",
+        "Canary: hand-edit a generated file, `just check` fails; record; revert.",
+        "A test enumerates every OpenAPI operation and fails if any lacks x-permission.",
+        "`curl localhost:PORT/healthz` against `go run ./cmd/conveyor serve` returns 200."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-007",
+      "milestone": "M0",
+      "priority": 7,
+      "area": "web",
+      "title": "Web app skeleton on the generated API client",
+      "user_visible_behavior": "A React 19 + TypeScript strict SPA builds, is embedded in the binary, and talks to the server only through a client generated from api/openapi.yaml.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-006"
+      ],
+      "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "web/ uses Vite, React 19, TypeScript strict with noUncheckedIndexedAccess, TanStack Router + Query, Tailwind, shadcn/ui.",
+        "The TS client is generated with openapi-typescript + openapi-fetch by `just gen`; drift check covers it.",
+        "ESLint bans `any` and non-null assertions; dependency-cruiser forbids web/src/features/* importing each other or calling fetch directly.",
+        "`go run ./cmd/conveyor serve` serves the SPA at / (go:embed); a Playwright smoke test loads it and saves a screenshot path as evidence.",
+        "`just check` runs web typecheck, lint, unit tests and exits 0."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-008",
+      "milestone": "M0",
+      "priority": 8,
+      "area": "storage",
+      "title": "Dev dependencies, migrations framework, and integration test harness",
+      "user_visible_behavior": "`docker compose up` starts PostgreSQL and ClickHouse for development; goose migrations and sqlc are wired; integration tests run against real databases via testcontainers.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-003"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "compose.yaml starts postgres and clickhouse with a low-memory ClickHouse config.",
+        "Migrations live in schema/postgres and schema/clickhouse; a first no-op-plus-version-table migration applies cleanly with `go run ./cmd/conveyor migrate`.",
+        "sqlc generation is part of `just gen` and the drift check.",
+        "`just test-integration` starts testcontainers and runs one Postgres and one ClickHouse round-trip test.",
+        "Migrations are applied behind a Postgres advisory lock (test with two concurrent migrators)."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-009",
+      "milestone": "M0",
+      "priority": 9,
+      "area": "ci",
+      "title": "CI pipeline with security scanning",
+      "user_visible_behavior": "Every PR runs the full guardrail suite in GitHub Actions; secrets, vulnerable deps, and failing checks block merge.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-007",
+        "m0-008"
+      ],
+      "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        ".github/workflows/ci.yml runs `./init.sh` (which runs `just check`) and `just test-integration`.",
+        "gitleaks, govulncheck and npm audit (high+) run in CI.",
+        "A deliberately failing PR (canary branch) shows a red check; link it in evidence and close it.",
+        "Coverage floors per module (90% domain/query/alerting/identity, 70% elsewhere) are enforced and coverage may not drop versus main."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-010",
+      "milestone": "M0",
+      "priority": 10,
+      "area": "api",
+      "title": "Breaking-change and docs-drift checks",
+      "user_visible_behavior": "CI blocks breaking API changes and PRs that change the API, a plugin schema, or a config key without touching the matching docs page.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-009"
+      ],
+      "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "oasdiff compares api/openapi.yaml with the main branch (later: last release) and fails on breaking changes under /api/v1.",
+        "scripts/check_docs_drift (or a Go tool) maps contract paths to docs pages and fails when one changes without the other; unit-tested.",
+        "Canaries for both checks recorded in evidence."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-011",
+      "milestone": "M0",
+      "priority": 11,
+      "area": "sim",
+      "title": "conveyor sim synthetic workload generator",
+      "user_visible_behavior": "`conveyor sim` emits realistic protocol-v1 events (multiple task types, queues, tenants, failures, retries, slow tasks) to stdout or to an ingest URL.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-005"
+      ],
+      "human_gate": null,
+      "verification": [
+        "`go run ./cmd/conveyor sim --out=- --rate=100 --duration=5s` writes NDJSON that validates against schema/event.v1.json (test).",
+        "Workload profile is configurable (task types, failure rate, duration distribution, tags) and deterministic with --seed.",
+        "Documented in docs/ with an example."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m0-012",
+      "milestone": "M0",
+      "priority": 12,
+      "area": "gate",
+      "title": "M0 exit gate: every guardrail proven on a sample module",
+      "user_visible_behavior": "`just check` runs every guardrail, and each guardrail has a recorded canary that proves it fails when violated.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-010",
+        "m0-011"
+      ],
+      "human_gate": null,
+      "verification": [
+        "scripts/canaries (or `just canaries`) applies each canary in a temp worktree and asserts `just check` fails: lint, size limit, import rule, generated-code drift, permission test, docs drift, oasdiff, coverage floor.",
+        "docs/harness/quality-document.md updated with first real grades.",
+        "Evaluator rubric run on M0 as a whole; verdict recorded in claude-progress.md."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-001",
+      "milestone": "M1",
+      "priority": 13,
+      "area": "platform",
+      "title": "Configuration file, env overrides, config validate",
+      "user_visible_behavior": "Operators configure Conveyor with one YAML file overridable by CONVEYOR_* env vars; `conveyor config validate` prints the effective config with secrets redacted.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-012"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Unit tests cover precedence (defaults < file < env) and redaction.",
+        "`conveyor config validate` exits non-zero on an invalid file with a clear message.",
+        "Configuration reference doc generated from the config struct."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-002",
+      "milestone": "M1",
+      "priority": 14,
+      "area": "metastore",
+      "title": "Projects and ingest keys in PostgreSQL",
+      "user_visible_behavior": "Projects and hashed per-project ingest keys can be created and looked up through the metastore port.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m0-012"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Migration adds projects and ingest_keys (hashed) tables.",
+        "sqlc queries + metastore adapter with integration tests.",
+        "Ingest key rotation with an overlap window is tested."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-003",
+      "milestone": "M1",
+      "priority": 15,
+      "area": "ingest",
+      "title": "Ingest endpoint POST /ingest/v1/events",
+      "user_visible_behavior": "SDKs send gzip NDJSON batches with a bearer ingest key and get 202 with accepted/rejected counts and a reason per rejected line.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-002",
+        "m0-011"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Rejects bad auth with 401; never fails a whole batch for one bad line (test).",
+        "Limits: 1,000 events / 1 MB per request enforced with problem-details errors.",
+        "Server receive time recorded on every event.",
+        "Integration test posts `conveyor sim` output and asserts counts."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-004",
+      "milestone": "M1",
+      "priority": 16,
+      "area": "eventstore",
+      "title": "ClickHouse task_events and task_runs",
+      "user_visible_behavior": "Ingested events land in task_events and are stitched into task_runs by a materialized view whose merge functions match domain.Merge.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-003"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "ClickHouse migration creates task_events (MergeTree, by day, ordered by project, task_name, ts) and task_runs (AggregatingMergeTree) with the MV.",
+        "Integration test: random permutations and duplicates of the same events produce the same task_runs row as domain.Merge.",
+        "Insert batching in the eventstore adapter, tested."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-005",
+      "milestone": "M1",
+      "priority": 17,
+      "area": "eventstore",
+      "title": "Rollup tables task_stats_1m and task_stats_1h",
+      "user_visible_behavior": "Per-minute and per-hour rollups (counts, sums, t-digest quantiles, 40-bucket log histogram) are filled at insert time.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-004"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Migration + MVs for task_stats_1m and task_stats_1h.",
+        "Integration test compares rollup aggregates with raw task_runs on a sim dataset.",
+        "TTLs from config applied."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-006",
+      "milestone": "M1",
+      "priority": 18,
+      "area": "query",
+      "title": "MetricQuery engine with tier selection",
+      "user_visible_behavior": "run.count, run.error_rate, run.duration and run.rate are answerable through one MetricQuery, choosing raw, 1m or 1h data and reporting the source.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-005"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "MetricQuery type defined in domain (contract).",
+        "Golden-file tests for every generated ClickHouse query.",
+        "Tier selection rules from docs/design.md tested; response includes `source`.",
+        "Coverage for internal/query at least 90%."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-007",
+      "milestone": "M1",
+      "priority": 19,
+      "area": "api",
+      "title": "Read API for metrics, task types, and runs",
+      "user_visible_behavior": "Clients call POST /metrics/query, GET /metrics/catalogue, GET /task-types, GET /task-types/{name}, GET /runs, GET /runs/{task_id}.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-006"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Endpoints added to api/openapi.yaml first, then implemented behind service ports.",
+        "API tests per endpoint against a sim dataset.",
+        "Docs pages for the endpoints."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-008",
+      "milestone": "M1",
+      "priority": 20,
+      "area": "identity",
+      "title": "Bootstrap auth: first-user admin, password login, sessions",
+      "user_visible_behavior": "The first user to sign up becomes instance admin and can log in; the UI and API require a session or token.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-002"
+      ],
+      "human_gate": "identity/auth code: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "argon2id password hashing; HTTP-only session cookie with CSRF protection.",
+        "identity.Authorize(principal, action, project) is the only authorisation check (arch test).",
+        "Coverage for internal/identity at least 90%."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-009",
+      "milestone": "M1",
+      "priority": 21,
+      "area": "sdk",
+      "title": "Python core SDK",
+      "user_visible_behavior": "Python apps use conveyor.track() to emit events; the SDK buffers, flushes every 2 s or 500 events, retries with jittered backoff, and drops (counting) past its cap.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-003"
+      ],
+      "human_gate": null,
+      "verification": [
+        "sdk/python package with sync and asyncio support.",
+        "Conformance suite: scripted workload against a fake ingest server compared to a golden file.",
+        "Overhead benchmark under 50 µs per event.",
+        "SDK never raises into the host app when the server is down (test)."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-010",
+      "milestone": "M1",
+      "priority": 22,
+      "area": "sdk",
+      "title": "conveyor-celery integration via signals",
+      "user_visible_behavior": "`conveyor_celery.init(app, dsn=...)` emits enqueued/started/succeeded/failed/retried/revoked/rejected and worker heartbeats, with tags and enqueue time carried in headers.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-009"
+      ],
+      "human_gate": "Supported Celery matrix needs a human answer: D-007 (agents use the recommended default meanwhile)",
+      "verification": [
+        "Signal-to-event mapping per docs/design.md tested with a real Celery worker in tests.",
+        "Conformance suite passes across the Celery version/pool matrix (see D-007).",
+        "5-minute Celery quickstart doc."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-011",
+      "milestone": "M1",
+      "priority": 23,
+      "area": "web",
+      "title": "Project overview screen",
+      "user_visible_behavior": "The landing page shows health strip, throughput, error rate, runs by terminal status and duration heatmap for a project, with every number linking to a filtered view.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-007",
+        "m1-008",
+        "m0-007"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Playwright test against sim data; screenshots saved and listed in evidence.",
+        "Light and dark themes; WCAG AA contrast check.",
+        "Uses only the generated API client."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-012",
+      "milestone": "M1",
+      "priority": 24,
+      "area": "web",
+      "title": "Task types list (Sentry-style)",
+      "user_visible_behavior": "One row per task type with sparkline, count, error rate, p50/p95 duration, last seen; sortable, filterable, 'needs attention' sort.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-011"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Playwright test covers sort and filter; screenshots in evidence.",
+        "URL holds the full filter state (test)."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-013",
+      "milestone": "M1",
+      "priority": 25,
+      "area": "web",
+      "title": "Project onboarding page",
+      "user_visible_behavior": "A new project shows copy-ready Celery and SDK snippets with its ingest key and a 'waiting for first event' indicator that becomes a link to the overview.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-011"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Playwright test: create project, send sim events, indicator flips."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-014",
+      "milestone": "M1",
+      "priority": 26,
+      "area": "deploy",
+      "title": "Docker Compose install",
+      "user_visible_behavior": "`docker compose up` with the published compose file starts conveyor, postgres and clickhouse; the UI works with sim data.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-012",
+        "m1-013"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Container image builds in CI.",
+        "E2E: compose up, run `conveyor sim` against it, Playwright overview test passes.",
+        "Getting-started doc."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-015",
+      "milestone": "M1",
+      "priority": 27,
+      "area": "perf",
+      "title": "Ingest and query performance gate",
+      "user_visible_behavior": "The benchmark suite shows 10,000 events/s sustained, p95 ingest-to-visible under 5 s, and 24 h dashboard query p95 under 300 ms on the reference node.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-014"
+      ],
+      "human_gate": null,
+      "verification": [
+        "`just bench` runs ingest and top dashboard query benchmarks on a fixed dataset.",
+        "CI fails on a regression over 15%.",
+        "Results recorded in docs/ with hardware details."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m1-016",
+      "milestone": "M1",
+      "priority": 28,
+      "area": "gate",
+      "title": "M1 exit gate: pilot project sends events",
+      "user_visible_behavior": "A real pilot Celery project sends production events to Conveyor and its team can use the overview and task list.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-010",
+        "m1-015"
+      ],
+      "human_gate": "Pilot project and gate reviewer: D-006",
+      "verification": [
+        "Pilot deployed and sending events (human confirms).",
+        "Evaluator rubric run on M1; quality document updated."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-001",
+      "milestone": "M2",
+      "priority": 29,
+      "area": "domain",
+      "title": "Shared filter grammar",
+      "user_visible_behavior": "One filter grammar (task:apps.chat.* status:failed queue:chat tag.tenant:acme duration:>5s) parses identically in API and UI.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-016"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Parser in domain with fuzz tests; TS parser generated or verified against the same fixtures.",
+        "Used by GET /runs."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-002",
+      "milestone": "M2",
+      "priority": 30,
+      "area": "probes",
+      "title": "Broker probes: Redis, RabbitMQ, SQS",
+      "user_visible_behavior": "Queue depth is sampled every 15 s from configured brokers; without probes, depth falls back to a labelled estimate.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m1-016"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "BrokerProbe port + shared conformance suite; three plugins pass it.",
+        "queue_samples table and queue.depth metric.",
+        "POST /ingest/v1/queue-samples implemented."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-003",
+      "milestone": "M2",
+      "priority": 31,
+      "area": "query",
+      "title": "Wait time metric and clock-skew warning",
+      "user_visible_behavior": "run.wait_time per queue is available, and the UI warns when a project's median clock skew exceeds 2 s.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-001"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Golden tests; runs without enqueue timestamp excluded and counted.",
+        "Skew computed from server receive time (test)."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-004",
+      "milestone": "M2",
+      "priority": 32,
+      "area": "eventstore",
+      "title": "Worker heartbeats, stale and lost runs",
+      "user_visible_behavior": "run.stale and run.lost are computed using per-task-type thresholds (explicit, soft_time_limit, else 3× p99 with 5-min floor) and missed worker heartbeats.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-003"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "worker_heartbeats table; GET /workers, /runs/stale, /runs/lost.",
+        "Threshold precedence tested.",
+        "PATCH /task-types/{name} sets stale threshold."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-005",
+      "milestone": "M2",
+      "priority": 33,
+      "area": "eventstore",
+      "title": "Promoted tags and tag rollups",
+      "user_visible_behavior": "A project promotes up to 5 tag keys; grouping by promoted tags uses task_stats_tag_1m, others aggregate from raw runs (7 days, top 20 + other).",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-003"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Migration for promoted_tags and task_stats_tag_1m.",
+        "Cardinality cap with 'other' bucket tested.",
+        "Tier selection returns correct source for tag queries."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-006",
+      "milestone": "M2",
+      "priority": 34,
+      "area": "web",
+      "title": "Runs explorer with live updates",
+      "user_visible_behavior": "Users search runs with the filter grammar, see live updates over SSE, and open run detail with attempts, timeline, tags, worker and stack trace.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-001",
+        "m2-004"
+      ],
+      "human_gate": null,
+      "verification": [
+        "SSE on GET /runs tested.",
+        "Playwright test with screenshots; keyboard navigation j/k."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-007",
+      "milestone": "M2",
+      "priority": 35,
+      "area": "web",
+      "title": "Queues, stale and lost, and task type detail screens",
+      "user_visible_behavior": "Queues screen (depth, wait, workers), stale/lost live list, and task type detail (box plot, heatmap, slowest runs, failures, tag breakdown, threshold setting) work on sim data.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-002",
+        "m2-005",
+        "m2-006"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Playwright tests with screenshots per screen."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m2-008",
+      "milestone": "M2",
+      "priority": 36,
+      "area": "gate",
+      "title": "M2 exit gate: one week of pilot data with no dropped events",
+      "user_visible_behavior": "The pilot runs on M2 for a week with zero dropped events.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-007"
+      ],
+      "human_gate": "Pilot confirmation: D-006",
+      "verification": [
+        "Self-metrics show zero dropped events over 7 days (human confirms).",
+        "Evaluator rubric and quality document updated."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-001",
+      "milestone": "M3",
+      "priority": 37,
+      "area": "alerting",
+      "title": "Alert rule model and evaluator",
+      "user_visible_behavior": "Rules (MetricQuery + warning/critical + resolve_below + for + renotify) evaluate every 30 s with an ok→pending→firing→resolved→ok state machine written to alert_events.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-008"
+      ],
+      "human_gate": "SQL migration: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "State machine property tests; coverage 90%.",
+        "Leader election via advisory lock among worker replicas (test).",
+        "Mute windows suppress notifications, not evaluation."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-002",
+      "milestone": "M3",
+      "priority": 38,
+      "area": "alerting",
+      "title": "Alerts as code",
+      "user_visible_behavior": "Rules load from a YAML directory at startup and show as read-only in UI/API.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-001"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Fixture rules load; API marks source=file."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-003",
+      "milestone": "M3",
+      "priority": 39,
+      "area": "notify",
+      "title": "Notifier port, conformance suite, webhook and email",
+      "user_visible_behavior": "Notifications deliver at-least-once with retries and a dead-letter view; the generic HMAC-signed webhook and SMTP email ship.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-001"
+      ],
+      "human_gate": null,
+      "verification": [
+        "porttest.RunNotifierSuite covers timeouts, retries, error classification, secret redaction.",
+        "Config schema drives the UI form (no frontend code per notifier)."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-004",
+      "milestone": "M3",
+      "priority": 40,
+      "area": "notify",
+      "title": "Slack notifier",
+      "user_visible_behavior": "Slack posts on firing with value, threshold, link and top 3 task types, and threads updates (bot token).",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-003"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Passes notifier conformance suite.",
+        "Recorded HTTP fixtures test message format.",
+        "Slack setup guide."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-005",
+      "milestone": "M3",
+      "priority": 41,
+      "area": "notify",
+      "title": "Instatus notifier",
+      "user_visible_behavior": "A rule maps to an Instatus component (warning→degraded, critical→partial outage, resolved→operational), with opt-in incidents.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-003"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Passes notifier conformance suite.",
+        "Never posts publicly without per-rule opt-in (test).",
+        "Instatus setup guide."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-006",
+      "milestone": "M3",
+      "priority": 42,
+      "area": "api",
+      "title": "Prometheus /metrics and /status endpoints",
+      "user_visible_behavior": "Prometheus scrapes token-protected /metrics; status-page monitors poll /status/v1/<token>.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-001"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Label cardinality cap tested.",
+        "Status document shape documented and tested."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-007",
+      "milestone": "M3",
+      "priority": 43,
+      "area": "identity",
+      "title": "Invites, roles, API tokens, audit log",
+      "user_visible_behavior": "Project admins invite by email or copyable link; roles admin/member/viewer enforced; personal API tokens; admin actions audited.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m2-008"
+      ],
+      "human_gate": "identity/auth code: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Every OpenAPI operation has a permission and a test per role.",
+        "Invite token single-use, 7-day expiry tests.",
+        "audit_log entries for admin actions."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-008",
+      "milestone": "M3",
+      "priority": 44,
+      "area": "web",
+      "title": "Alerts and settings screens",
+      "user_visible_behavior": "Alert list, rule editor with live preview chart, history; settings for members, invites, ingest keys, integrations, promoted tags, tokens.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-002",
+        "m3-004",
+        "m3-005",
+        "m3-007"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Playwright tests with screenshots.",
+        "'Send test' for every channel works against a fake receiver."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m3-009",
+      "milestone": "M3",
+      "priority": 45,
+      "area": "gate",
+      "title": "M3 exit gate: pilot on-call relies on Conveyor alerts",
+      "user_visible_behavior": "The pilot's on-call uses Conveyor alerts for queue health.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-006",
+        "m3-008"
+      ],
+      "human_gate": "Pilot confirmation: D-006",
+      "verification": [
+        "Human confirms.",
+        "Evaluator rubric and quality document updated."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-001",
+      "milestone": "M4",
+      "priority": 46,
+      "area": "dashboards",
+      "title": "Custom dashboards",
+      "user_visible_behavior": "Users build dashboards of MetricQuery panels in a visual editor with a JSON view; definitions round-trip export/import.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "CRUD API + Playwright tests."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-002",
+      "milestone": "M4",
+      "priority": 47,
+      "area": "errors",
+      "title": "Error groups",
+      "user_visible_behavior": "Failures group by fingerprint with first/last seen, affected tenants, resolve/ignore/assign.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": "contract change: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "Fingerprint algorithm tests; API + UI tests."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-003",
+      "milestone": "M4",
+      "priority": 48,
+      "area": "identity",
+      "title": "OIDC auth provider plugin",
+      "user_visible_behavior": "Users sign in with Google, Okta, Keycloak or GitHub via OIDC, with optional auto-join by email domain.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": "identity/auth code: human approves the PR (CODEOWNERS)",
+      "verification": [
+        "AuthProvider conformance tests with a fake IdP."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-004",
+      "milestone": "M4",
+      "priority": 49,
+      "area": "deploy",
+      "title": "Helm chart",
+      "user_visible_behavior": "Kubernetes install with separate Deployments per role and HPA for ingest.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": null,
+      "verification": [
+        "chart lint + kind-based install test in CI."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-005",
+      "milestone": "M4",
+      "priority": 50,
+      "area": "sdk",
+      "title": "Node SDK with BullMQ integration",
+      "user_visible_behavior": "Node apps using BullMQ report runs to Conveyor.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": "Package publishing needs a human-owned npm account: D-008",
+      "verification": [
+        "Passes the shared SDK conformance suite."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-006",
+      "milestone": "M4",
+      "priority": 51,
+      "area": "docs",
+      "title": "Documentation site",
+      "user_visible_behavior": "Astro Starlight site with every section from docs/design.md → Documentation plan builds on merge.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": null,
+      "verification": [
+        "Link check passes; generated API/config/plugin references present."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-007",
+      "milestone": "M4",
+      "priority": 52,
+      "area": "cli",
+      "title": "conveyor CLI on the generated client",
+      "user_visible_behavior": "The CLI covers the public API operations for scripting and agents.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m3-009"
+      ],
+      "human_gate": null,
+      "verification": [
+        "CLI tests for each command group."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-008",
+      "milestone": "M4",
+      "priority": 53,
+      "area": "release",
+      "title": "Release pipeline",
+      "user_visible_behavior": "Tagged releases produce signed multi-arch images, an SBOM and a changelog from conventional commits; upgrade from the previous release is tested.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m4-004",
+        "m4-006"
+      ],
+      "human_gate": "Licence D-001 and name D-002 must be decided; publishing credentials D-008",
+      "verification": [
+        "Dry-run release in CI.",
+        "Migration test from previous release schema snapshot."
+      ],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "id": "m4-009",
+      "milestone": "M4",
+      "priority": 54,
+      "area": "gate",
+      "title": "1.0 exit gate",
+      "user_visible_behavior": "Docs complete, upgrade from M3 tested, public 1.0 release.",
+      "status": "not_started",
+      "owner": null,
+      "depends_on": [
+        "m4-001",
+        "m4-002",
+        "m4-003",
+        "m4-005",
+        "m4-007",
+        "m4-008"
+      ],
+      "human_gate": "Human approves public release",
+      "verification": [
+        "Human approves the release."
+      ],
+      "evidence": [],
+      "notes": ""
+    }
+  ]
+}

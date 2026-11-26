@@ -1,0 +1,26 @@
+# Human-owned paths (docs/harness/ownership.md). Requires branch protection
+# with "Require review from Code Owners" to be enforced (DECISIONS.md D-010).
+
+# Contracts
+/api/openapi.yaml           @snopoke
+/schema/                    @snopoke
+/internal/domain/query*.go  @snopoke
+
+# Identity, auth, secrets
+/internal/identity/         @snopoke
+/plugins/authprovider/      @snopoke
+/plugins/secretstore/       @snopoke
+
+# Architecture rules, lint, CI
+/.go-arch-lint.yml          @snopoke
+/.golangci.yml              @snopoke
+/web/.dependency-cruiser.*  @snopoke
+/.github/                   @snopoke
+
+# Design, ADRs, harness
+/docs/design.md             @snopoke
+/docs/adr/                  @snopoke
+/docs/harness/              @snopoke
+/AGENTS.md                  @snopoke
+/CLAUDE.md                  @snopoke
+/scripts/check_harness.py   @snopoke
