@@ -53,7 +53,7 @@ Template:
 - **Recommendation:** Let an agent run the collision check (GitHub, PyPI, npm, Docker Hub, trademarks) and report back here before M1 ends; renaming later costs more.
 - **Default until answered:** use "conveyor" everywhere (Go module path, package names, image names); keep it in as few places as practical.
 - **Blocks:** m4-008 (release) and any package publishing.
-- **Answer:** pending. Owner replied "run a collision check and report back here" (2026-11-26, https://github.com/snopoke/conveyor/issues/2#issuecomment-7194038037); an agent posts the check on the issue, then the owner picks keep or rename.
+- **Answer:** pending. Owner replied "run a collision check and report back here" (2026-11-26, https://github.com/snopoke/conveyor/issues/2#issuecomment-7194038037); collision check posted 2026-11-26 (https://github.com/snopoke/conveyor/issues/2#issuecomment-7194266748): risk medium-high (bare PyPI/npm names taken, two similar OSS projects, a Class 42 software trademark held by Conveyor, Inc.); recommends renaming before M1 ends, top candidate "taskscope". Waiting for the owner to reply A) keep or B) rename to <name>.
 
 ## Decided
 
