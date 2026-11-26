@@ -105,8 +105,26 @@ A feature moves to `passing` only when all are true:
 - Branch per feature. Conventional commit messages (`feat(ingest): ...`).
 - Fill in `.github/pull_request_template.md`, including the feature ID and the
   evidence.
-- PRs that touch only agent-owned paths merge on green CI plus a reviewer-agent
-  **Accept**. PRs that touch human-owned paths wait for the human (CODEOWNERS).
+- One PR per feature carries everything: code, tests, docs, and the
+  bookkeeping (`feature_list.json`, `claude-progress.md`,
+  `session-handoff.md`, `DECISIONS.md`). Do not open a separate PR to mark a
+  feature `passing` or to update the log. After the reviewer's **Accept**,
+  commit the `passing` status and evidence to the same branch, so the PR
+  holds the state `main` should have once it merges.
+- **Agent-owned PRs: the builder merges.** When the PR touches only
+  agent-owned paths, CI is green, and the reviewer's **Accept** is recorded
+  in the PR description, mark the PR ready and merge it yourself. Do not
+  leave it for the human.
+- **Human-owned PRs: the human merges.** When the PR touches any path in
+  `.github/CODEOWNERS`, mark it ready, list those paths in the description,
+  and stop. Never merge it, never approve it, and never turn on auto-merge
+  for it, even if GitHub would allow it.
+- If GitHub refuses the merge of an agent-owned PR (branch protection, a
+  failing or missing check), do not work around it. Fix the cause if it is
+  yours; otherwise leave the PR ready and record the reason in
+  `session-handoff.md`.
+- Keep human-owned changes out of feature PRs where you can, so that most PRs
+  stay agent-owned (see `docs/harness/ownership.md` → splitting).
 
 ## End of session
 
@@ -116,4 +134,6 @@ Run through `docs/harness/clean-state-checklist.md`, then:
 2. Update the feature's `status`, `evidence`, and `notes` in `feature_list.json`.
 3. Overwrite `session-handoff.md` for the next session.
 4. Record unresolved risks; add any new human questions to `DECISIONS.md`.
-5. Commit and push once the repo is in a safe state. Leave `./init.sh` green.
+5. Commit and push to the feature's PR branch once the repo is in a safe
+   state. Leave `./init.sh` green. Then merge the PR or leave it for the
+   human, as **Pull requests** says.

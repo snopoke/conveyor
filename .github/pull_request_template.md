@@ -6,7 +6,7 @@
 
 ## Human-owned paths touched
 
-<!-- None, or list them (contract, migration, identity, CI/arch rules, ADR, harness). If any, this PR waits for CODEOWNERS review. -->
+<!-- None, or list them (contract, migration, identity, CI/arch rules, ADR, harness). If any, the human merges this PR. If none, the builder merges it after green CI and the reviewer's Accept. -->
 
 ## Verification evidence
 

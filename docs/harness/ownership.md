@@ -27,3 +27,13 @@ bugs, improve docs, split features into smaller ones in `feature_list.json`
 
 When a feature needs both kinds of change, split the PR: contract or
 migration first (human review), implementation second (agent review).
+
+## Who merges
+
+- A PR that touches only the right column: the builder merges it, after green
+  CI and a reviewer-agent Accept recorded in the PR description.
+- A PR that touches anything in the left column: the human merges it. Agents
+  mark it ready and stop; they never merge, approve, or auto-merge it.
+- The bookkeeping files (progress log, handoff, feature state, `DECISIONS.md`)
+  travel in the feature's PR, never in a PR of their own while a feature PR is
+  open.

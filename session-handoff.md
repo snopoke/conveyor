@@ -19,7 +19,7 @@
 
 - Known defect: none known. The reviewer's Revise findings are fixed; a fresh-clone `./init.sh` leaves `git status` clean. The reviewer agent's re-review is Accept. The branch history was rebuilt without the binary (force-pushed at the owner's request).
 - Unverified path: none known. CI `verify` (mise-action + init.sh) passed on PR #13.
-- Risk for the next session: none known. The project and repository are now **Gumption** (`snopoke/gumption`). `git grep -i conveyor` only finds decision history and older progress-log entries. Old `snopoke/conveyor` URLs redirect.
+- Risk for the next session: the merge rule changed (Session 004): builders now merge agent-owned PRs themselves and keep bookkeeping in the feature PR; see `AGENTS.md` → Pull requests. If branch protection refuses such a merge because it needs an approving review, leave the PR ready and record it here; only the owner can change that setting. The project and repository are now **Gumption** (`snopoke/gumption`). `git grep -i conveyor` only finds decision history and older progress-log entries. Old `snopoke/conveyor` URLs redirect.
 
 ## Next Best Step
 
