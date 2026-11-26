@@ -44,16 +44,7 @@ Template:
 
 ## Open
 
-### D-002 Product name
-- **Status:** open
-- **Issue:** https://github.com/snopoke/conveyor/issues/2
-- **Raised:** 2026-11-26 by harness setup (from docs/design.md → Open questions)
-- **Question:** Keep "Conveyor" after a collision check, or rename?
-- **Options:** A) Keep. B) Rename (agents can research and shortlist names on request).
-- **Recommendation:** Let an agent run the collision check (GitHub, PyPI, npm, Docker Hub, trademarks) and report back here before M1 ends; renaming later costs more.
-- **Default until answered:** use "conveyor" everywhere (Go module path, package names, image names); keep it in as few places as practical.
-- **Blocks:** m4-008 (release) and any package publishing.
-- **Answer:** pending. Owner replied "run a collision check and report back here" (2026-11-26, https://github.com/snopoke/conveyor/issues/2#issuecomment-7194038037); an agent posts the check on the issue, then the owner picks keep or rename.
+_None._
 
 ## Decided
 
@@ -155,3 +146,14 @@ Template:
 - **Default until answered:** agents never merge PRs that touch human-owned paths; they request review and wait.
 - **Blocks:** nothing.
 - **Answer:** "A: I have turned on branch protection" (snopoke, 2026-11-26, https://github.com/snopoke/conveyor/issues/10#issuecomment-7194174971). Applied: CODEOWNERS review and CI are now enforced on `main`; agents still never merge PRs that touch human-owned paths.
+
+### D-002 Product name
+- **Status:** decided
+- **Issue:** https://github.com/snopoke/conveyor/issues/2
+- **Raised:** 2026-11-26 by harness setup (from docs/design.md → Open questions)
+- **Question:** Keep "Conveyor" after a collision check, or rename?
+- **Options:** A) Keep. B) Rename (agents can research and shortlist names on request).
+- **Recommendation:** Let an agent run the collision check (GitHub, PyPI, npm, Docker Hub, trademarks) and report back here before M1 ends; renaming later costs more.
+- **Default until answered:** use "conveyor" everywhere (Go module path, package names, image names); keep it in as few places as practical.
+- **Blocks:** m4-008 (release) and any package publishing.
+- **Answer:** B) rename to "Gumption". Given by the owner (snopoke) directly in the Claude Code session on 2026-11-26, after the collision check posted on the issue (https://github.com/snopoke/conveyor/issues/2#issuecomment-7194266748). Applied: every product name and identifier in docs, harness and backlog renamed (Gumption / gumption / GUMPTION_*), Go module path `github.com/snopoke/gumption`, binary `cmd/gumption`. Registry check 2026-11-26: `gumption` and `gumption-celery` free on PyPI, `gumption` free on npm; Docker Hub and trademarks not checked. Owner follow-ups: rename the GitHub repository to `gumption` (GitHub redirects the old URLs; until then the module path and repo URL differ, which only matters for external `go get`), and create the PyPI/npm projects when publishing (D-008). Historical text in this file and in the progress log keeps the old name.

@@ -40,4 +40,4 @@ Missing evidence:
 
 Record every change to the criteria above, why, and which PRs prompted it.
 
-- 2026-11-26: initial version adapted from the learn-harness-engineering template with Conveyor-specific pass/fail criteria.
+- 2026-11-26: initial version adapted from the learn-harness-engineering template with Gumption-specific pass/fail criteria.
