@@ -78,5 +78,5 @@ add a session entry before you stop. Only the last 5 sessions stay here
 - Completed: `DECISIONS.md` keeps open entries in full and decided ones as one line each; the full decided text moved to `docs/decisions/archive.md`. `claude-progress.md` keeps the last 5 sessions; older ones go to `docs/progress/YYYY-MM.md`. Evidence items are capped at 400 characters and 15 per feature. Fully passing milestones move to `docs/features/<milestone>.json`, which `check_harness.py` and `session-brief.sh` also read. `AGENTS.md` end-of-session steps, the clean-state checklist and `docs/harness/README.md` describe the new rules.
 - Verification run: `python3 scripts/check_harness.py` and its unit tests (25, including 12 new canaries). `mise` was not available in this container, so `just check` runs in CI only; no Go code changed.
 - Commits: `chore(harness): cap the size of files read at session start`.
-- Known risk or unresolved issue: PR #17 (open, from the builder session) edits `DECISIONS.md` in the old format; whichever merges second must convert its entry to the one-line form.
+- Known risk or unresolved issue: none. PR #17 merged first; its D-002 update was carried into `docs/decisions/archive.md` and the one-line D-002 and D-008 entries when merging main.
 - Next best step: m0-002.

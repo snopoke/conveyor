@@ -1068,7 +1068,7 @@
       "depends_on": [
         "m3-009"
       ],
-      "human_gate": "Publishing via npm trusted publishing from GitHub Actions (D-008); the owner creates the `gumption` npm package (name decided: D-002)",
+      "human_gate": "Publishing via npm trusted publishing from GitHub Actions (D-008). The `gumption` npm package exists (owner snopoke, placeholder 0.0.0-stage, 2026-11-26); the owner adds the trusted-publisher config for this repo's release workflow.",
       "verification": [
         "Passes the shared SDK conformance suite."
       ],
@@ -1126,7 +1126,7 @@
         "m4-004",
         "m4-006"
       ],
-      "human_gate": "Name is Gumption (D-002); licence is Apache-2.0 (D-001); images to GHCR signed with keyless cosign, PyPI/npm via trusted publishing (D-008); the owner creates the PyPI/npm projects; human approves the PR (CODEOWNERS)",
+      "human_gate": "Name is Gumption (D-002); licence is Apache-2.0 (D-001); images to GHCR signed with keyless cosign, PyPI/npm via trusted publishing (D-008). `gumption` is registered on PyPI and npm (2026-11-26); `gumption-celery` is not yet registered on PyPI. Human approves the PR (CODEOWNERS).",
       "verification": [
         "Dry-run release in CI.",
         "Migration test from previous release schema snapshot."

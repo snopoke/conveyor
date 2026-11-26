@@ -58,12 +58,12 @@ One line per decision: the answer and what it changed. The full entry
 need the reasoning.
 
 - **D-001** Licence: Apache-2.0. `LICENSE` added. [#1](https://github.com/snopoke/gumption/issues/1)
-- **D-002** Product name: renamed to Gumption (module `github.com/snopoke/gumption`, binary `gumption`, repo `snopoke/gumption`). [#2](https://github.com/snopoke/gumption/issues/2)
+- **D-002** Product name: renamed to Gumption (module `github.com/snopoke/gumption`, binary `gumption`, repo `snopoke/gumption`). Owner registered `gumption` on PyPI and npm (placeholders); `gumption-celery` is not registered on PyPI. [#2](https://github.com/snopoke/gumption/issues/2)
 - **D-003** Lite single-database mode: yes in v1, as feature m4-010; ClickHouse stays the default. [#3](https://github.com/snopoke/gumption/issues/3)
 - **D-004** Worker actions: read-only; no feature adds them. [#4](https://github.com/snopoke/gumption/issues/4)
 - **D-005** OTLP ingest: community plugin on the `IngestDecoder` port, not core. [#5](https://github.com/snopoke/gumption/issues/5)
 - **D-006** Pilot: open-chat-studio; snopoke confirms milestone gates. [#6](https://github.com/snopoke/gumption/issues/6)
 - **D-007** Celery matrix: 5.3, 5.4, 5.5 × prefork, threads, gevent, solo on Python 3.10–3.13. [#7](https://github.com/snopoke/gumption/issues/7)
-- **D-008** Accounts: GHCR, PyPI/npm trusted publishing, keyless cosign; no long-lived tokens; owner creates the PyPI/npm projects before publishing. [#8](https://github.com/snopoke/gumption/issues/8)
+- **D-008** Accounts: GHCR, PyPI/npm trusted publishing, keyless cosign; no long-lived tokens; owner adds trusted-publisher config when the release workflow exists (m4-008). [#8](https://github.com/snopoke/gumption/issues/8)
 - **D-009** Agent scheduling: the owner starts sessions manually for now; agents must not set up scheduling. [#9](https://github.com/snopoke/gumption/issues/9)
 - **D-010** Branch protection: on; CODEOWNERS review and CI enforced on `main`. [#10](https://github.com/snopoke/gumption/issues/10)
