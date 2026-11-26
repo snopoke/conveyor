@@ -8,7 +8,7 @@ agent uses it.)
 
 - Repository root: repository checkout root (contains `AGENTS.md`)
 - Standard startup path: `./init.sh` (needs mise; installs the toolchain pinned in `mise.toml`)
-- Product name: Gumption (binary `gumption`, module `github.com/snopoke/gumption`). The GitHub repo is still `snopoke/conveyor` until the owner renames it.
+- Product name: Gumption (binary `gumption`, module `github.com/snopoke/gumption`, repo `snopoke/gumption`, renamed by the owner 2026-11-26).
 - Standard verification path: `./scripts/verify.sh` → `mise exec -- just check` (harness, gofmt, go build, vet, test)
 - Features passing: 1 / 55 (m0-001)
 - m0-001: `passing` (PR #13 merged by the owner).
@@ -68,4 +68,4 @@ agent uses it.)
   - Recorded D-002 as decided.
   - Renamed docs, harness and backlog on `chore/rename-gumption`. Excluded: GitHub URLs (`snopoke/conveyor`), decision history, the progress log, and the files PR #13 owns.
   - Rebuilt PR #13 with `cmd/gumption` and module `github.com/snopoke/gumption`, then re-verified on a fresh clone.
-
+- The owner renamed the GitHub repository to `snopoke/gumption`. All links in `DECISIONS.md`, `feature_list.json` and the handoff were updated; older session entries above keep the old URLs, which GitHub redirects.
