@@ -23,7 +23,7 @@
 
 ## Next Best Step
 
-- Highest-priority unfinished feature: m0-001 is waiting for owner review on PR #13. Once it is approved or merged, set it to `passing` (evidence, PR link and CI run are already recorded) and start m0-002 "Strict Go lint with size limits".
+- Highest-priority unfinished feature: m0-002 "Strict Go lint with size limits". m0-001 is `passing` (PR #13 merged).
 - Why it is next: m0-002 depends on m0-001.
 - What counts as passing: m0-002's three verification steps in `feature_list.json`.
 - What must not change during that step: `docs/design.md`, `DECISIONS.md` answers, the feature list rules.

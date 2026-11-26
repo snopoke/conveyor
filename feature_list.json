@@ -21,7 +21,7 @@
       "area": "tooling",
       "title": "Go module, binary entrypoint, mise + just",
       "user_visible_behavior": "A developer or agent runs `just check` and `go run ./cmd/gumption version` from a fresh clone; init.sh and verify.sh delegate to `just check`.",
-      "status": "in_progress",
+      "status": "passing",
       "owner": "feat/m0-001-toolchain",
       "depends_on": [],
       "human_gate": "CI / architecture-rule change: human approves the PR (CODEOWNERS)",
@@ -40,9 +40,10 @@
         "Edge cases: deleted-but-indexed .go → fmt-check exit 0; no Go files → fmt-check and fmt exit 0; misformatted `cmd/sp ace/m.go` → fmt-check exit 1, clean after `just fmt`; `just run \"bad arg\"` → `unknown command \"bad arg\"`.",
         "CI `verify` (jdx/mise-action@v5 + ./init.sh) green on PR #13 before the rebuild (runs 45836028958, 45836640537, 45836663063); re-runs on the rebuilt head.",
         "Reviewer agent (rubric): first pass Revise (stray committed binary, loose Python pin, gofmt recipe edge cases, `mise env` failure handling, handoff accuracy), all fixed; re-review on c883310: Accept (Correctness 2, Verification 2, Scope 2, Guardrails 2, Reliability 2, Maintainability 2, Handoff 1 → fixed).",
-        "History rebuilt and force-pushed at the owner's request (2026-11-26) so the stray binary is in no commit; binary/module renamed to gumption after D-002 was decided. PR: https://github.com/snopoke/conveyor/pull/13"
+        "History rebuilt and force-pushed at the owner's request (2026-11-26) so the stray binary is in no commit; binary/module renamed to gumption after D-002 was decided. PR: https://github.com/snopoke/conveyor/pull/13",
+        "Merged to main by the owner (CODEOWNERS approval) on 2026-11-26 via PR #13; `./init.sh` on main after the merge → exit 0, clean tree."
       ],
-      "notes": "Implemented, verified and reviewer-accepted. Waiting on the owner's CODEOWNERS approval (touches .github/workflows/ci.yml). Not `passing` until merged. Pairs with the rename PR (chore/rename-gumption); either can merge first."
+      "notes": "Done. Rename of the remaining docs to Gumption is PR #14 (D-002)."
     },
     {
       "id": "m0-002",
