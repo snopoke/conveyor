@@ -19,7 +19,7 @@
 
 - Known defect: none known. The reviewer's Revise findings are fixed; a fresh-clone `./init.sh` leaves `git status` clean. The reviewer agent's re-review is Accept. The branch history was rebuilt without the binary (force-pushed at the owner's request).
 - Unverified path: none known. CI `verify` (mise-action + init.sh) passed on PR #13.
-- Risk for the next session: none known. The project is now **Gumption** (D-002, PR #14 merged). `git grep -i conveyor` only finds GitHub URLs (`snopoke/conveyor`), decision history and the progress log. If the owner renames the GitHub repo, update those URLs.
+- Risk for the next session: none known. The project and repository are now **Gumption** (`snopoke/gumption`). `git grep -i conveyor` only finds decision history and older progress-log entries. Old `snopoke/conveyor` URLs redirect.
 
 ## Next Best Step
 
