@@ -90,15 +90,78 @@ class CheckHarnessTest(unittest.TestCase):
         (mod / "AGENTS.md").write_text("x\n" * 151)
         self.assertTrue(any("151 lines" in e for e in check_harness.check(self.tmp)))
 
-    def test_decision_needs_status(self):
+    def edit_decisions(self, fn):
         p = self.tmp / "DECISIONS.md"
-        p.write_text(p.read_text() + "\n### D-900 No status here\n- **Question:** ?\n")
-        self.assertTrue(any("D-900 lacks" in e for e in check_harness.check(self.tmp)))
+        p.write_text(fn(p.read_text()))
+        return check_harness.check(self.tmp)
+
+    def add_open(self, entry):
+        return self.edit_decisions(lambda t: t.replace("\n## Decided", f"\n{entry}\n\n## Decided", 1))
+
+    def assertError(self, errors, fragment):
+        self.assertTrue(any(fragment in e for e in errors), f"expected {fragment!r} in {errors}")
+
+    def test_open_decision_needs_status(self):
+        errors = self.add_open("### D-900 No status here\n- **Question:** ?")
+        self.assertError(errors, "D-900 is under Open but lacks")
 
     def test_open_decision_needs_issue(self):
-        p = self.tmp / "DECISIONS.md"
-        p.write_text(p.read_text() + "\n### D-901 No issue\n- **Status:** open\n- **Question:** ?\n")
-        self.assertTrue(any("D-901 lacks a '- **Issue:**" in e for e in check_harness.check(self.tmp)))
+        errors = self.add_open("### D-901 No issue\n- **Status:** open\n- **Question:** ?")
+        self.assertError(errors, "D-901 lacks a '- **Issue:**")
+
+    def test_decided_entry_must_be_one_line(self):
+        errors = self.edit_decisions(lambda t: t + "\n### D-902 Full text\n- **Status:** decided\n")
+        self.assertError(errors, "decided D-902 must be a one-line entry")
+
+    def test_decided_line_needs_issue_link(self):
+        errors = self.edit_decisions(lambda t: t + "- **D-903** Something: yes.\n")
+        self.assertError(errors, "malformed decided line")
+
+    def test_decided_ids_count_as_known(self):
+        line = "- **D-904** Something: yes. [#99](https://github.com/o/r/issues/99)\n"
+        self.edit_decisions(lambda t: t + line)
+        errors = self.run_with(lambda fs: fs[0].update(notes="see D-904"))
+        self.assertFalse(any("D-904" in e for e in errors), errors)
+
+    def test_duplicate_decision_id(self):
+        errors = self.add_open("### D-001 Again\n- **Status:** open\n- **Issue:** pending")
+        self.assertError(errors, "duplicate decision IDs")
+
+    def test_progress_log_session_cap(self):
+        p = self.tmp / "claude-progress.md"
+        extra = "".join(f"\n### Session {900 + i}\n- Date: x\n" for i in range(6))
+        p.write_text(p.read_text() + extra)
+        self.assertError(check_harness.check(self.tmp), "move the oldest to docs/progress/")
+
+    def test_evidence_item_length_cap(self):
+        self.assertFires(lambda fs: fs[0]["evidence"].append("x" * 401), "evidence item of 401 chars")
+
+    def test_evidence_item_count_cap(self):
+        self.assertFires(lambda fs: fs[0]["evidence"].extend(["x"] * 16), "evidence items (max 15)")
+
+    def archive(self, features):
+        d = self.tmp / "docs" / "features"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "M0.json").write_text(json.dumps({"milestone": "M0", "features": features}))
+
+    def test_archived_features_must_be_passing(self):
+        f = copy.deepcopy(self.data["features"][0])
+        f.update(id="zz-001", status="not_started", owner=None, depends_on=[])
+        self.archive([f])
+        self.assertError(check_harness.check(self.tmp), "archived feature zz-001 is not passing")
+
+    def test_dependencies_resolve_into_archive(self):
+        f = copy.deepcopy(self.data["features"][0])
+        f.update(id="zz-002", status="passing", owner=None, depends_on=[], evidence=["PR #1"])
+        self.archive([f])
+        errors = self.run_with(lambda fs: fs[0]["depends_on"].append("zz-002"))
+        self.assertFalse(any("zz-002" in e for e in errors), errors)
+
+    def test_duplicate_id_across_archive(self):
+        f = copy.deepcopy(self.data["features"][0])
+        f.update(status="passing", evidence=["PR #1"])
+        self.archive([f])
+        self.assertError(check_harness.check(self.tmp), f"M0.json: duplicate id {f['id']}")
 
 
 if __name__ == "__main__":

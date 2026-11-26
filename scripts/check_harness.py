@@ -3,7 +3,8 @@
 
 A harness rule an agent can break without CI failing is a suggestion, not a
 rule. This script turns the rules in AGENTS.md about feature state, decisions,
-and module docs into checks. It uses only the standard library.
+and module docs into checks. It also caps the size of the files every session
+reads, so their cost stays flat as the project grows. Standard library only.
 
 Usage: python3 scripts/check_harness.py [repo_root]
 """
@@ -51,6 +52,12 @@ FEATURE_KEYS = {
     "notes": str,
 }
 MODULE_AGENTS_MAX_LINES = 150
+PROGRESS_MAX_SESSIONS = 5
+EVIDENCE_MAX_CHARS = 400
+EVIDENCE_MAX_ITEMS = 15
+FEATURE_ARCHIVE_DIR = "docs/features"
+SESSION_HEADING = re.compile(r"^### Session\b", re.M)
+DECIDED_LINE = re.compile(r"^- \*\*(D-\d{3})\*\* \S.*\[#\d+\]\(https://github\.com/\S+/issues/\d+\)\s*$")
 DECISION_HEADING = re.compile(r"^### (D-\d{3})\b", re.M)
 DECISION_STATUS = re.compile(r"^- \*\*Status:\*\* (open|decided|superseded)\b", re.M)
 DECISION_REF = re.compile(r"\bD-\d{3}\b")
@@ -69,6 +76,7 @@ def check(root: Path) -> list[str]:
 
     decisions = _decisions(root, errors)
     _features(root, decisions, errors)
+    _progress(root, errors)
     _module_agents(root, errors)
     return errors
 
@@ -78,15 +86,34 @@ def _decisions(root: Path, errors: list[str]) -> set[str]:
     if not path.exists():
         return set()
     text = path.read_text()
-    ids = DECISION_HEADING.findall(text)
+    if "\n## Open" not in text or "\n## Decided" not in text:
+        errors.append("DECISIONS.md: needs '## Open' and '## Decided' sections")
+        return set()
+    open_part = text.split("\n## Open", 1)[1].split("\n## Decided", 1)[0]
+    decided_part = text.split("\n## Decided", 1)[1]
+
+    ids = DECISION_HEADING.findall(open_part)
+    sections = DECISION_HEADING.split(open_part)[1:]
+    for did, body in zip(sections[::2], sections[1::2]):
+        status = DECISION_STATUS.search(body)
+        if not status or status.group(1) != "open":
+            errors.append(f"DECISIONS.md: {did} is under Open but lacks '- **Status:** open'")
+        elif not DECISION_ISSUE.search(body):
+            errors.append(f"DECISIONS.md: open {did} lacks a '- **Issue:** <issue URL>|pending' line")
+
+    for did in DECISION_HEADING.findall(decided_part):
+        errors.append(
+            f"DECISIONS.md: decided {did} must be a one-line entry; move the full text to docs/decisions/archive.md"
+        )
+    index = [ln for ln in decided_part.splitlines() if ln.startswith("- ")]
+    for ln in index:
+        m = DECIDED_LINE.match(ln)
+        if not m:
+            errors.append(f"DECISIONS.md: malformed decided line: {ln[:80]}")
+        else:
+            ids.append(m.group(1))
     if len(ids) != len(set(ids)):
         errors.append("DECISIONS.md: duplicate decision IDs")
-    sections = DECISION_HEADING.split(text)[1:]
-    for did, body in zip(sections[::2], sections[1::2]):
-        if not DECISION_STATUS.search(body):
-            errors.append(f"DECISIONS.md: {did} lacks a '- **Status:** open|decided|superseded' line")
-        elif DECISION_STATUS.search(body).group(1) == "open" and not DECISION_ISSUE.search(body):
-            errors.append(f"DECISIONS.md: open {did} lacks a '- **Issue:** <issue URL>|pending' line")
     return set(ids)
 
 
@@ -100,13 +127,32 @@ def _features(root: Path, decisions: set[str], errors: list[str]) -> None:
         errors.append(f"feature_list.json: invalid JSON: {exc}")
         return
     features = data.get("features")
-    if not isinstance(features, list) or not features:
-        errors.append("feature_list.json: 'features' must be a non-empty list")
+    if not isinstance(features, list):
+        errors.append("feature_list.json: 'features' must be a list")
+        return
+    sources = [("feature_list.json", features)]
+    archive = root / FEATURE_ARCHIVE_DIR
+    for arch in sorted(archive.glob("*.json")) if archive.is_dir() else []:
+        rel = str(arch.relative_to(root))
+        try:
+            archived = json.loads(arch.read_text()).get("features")
+        except (json.JSONDecodeError, AttributeError) as exc:
+            errors.append(f"{rel}: invalid feature archive: {exc}")
+            continue
+        if not isinstance(archived, list):
+            errors.append(f"{rel}: 'features' must be a list")
+            continue
+        for f in archived:
+            if isinstance(f, dict) and f.get("status") != "passing":
+                errors.append(f"{rel}: archived feature {f.get('id')} is not passing")
+        sources.append((rel, archived))
+    if not any(feats for _, feats in sources):
+        errors.append("feature_list.json: no features")
         return
 
     by_id: dict[str, dict] = {}
-    for i, f in enumerate(features):
-        where = f"feature_list.json: features[{i}]"
+    for src, i, f in ((src, i, f) for src, feats in sources for i, f in enumerate(feats)):
+        where = f"{src}: features[{i}]"
         if not isinstance(f, dict):
             errors.append(f"{where}: not an object")
             continue
@@ -121,7 +167,7 @@ def _features(root: Path, decisions: set[str], errors: list[str]) -> None:
         fid = f.get("id")
         if isinstance(fid, str):
             if fid in by_id:
-                errors.append(f"feature_list.json: duplicate id {fid}")
+                errors.append(f"{src}: duplicate id {fid}")
             by_id[fid] = f
 
     owners: dict[str, str] = {}
@@ -136,6 +182,15 @@ def _features(root: Path, decisions: set[str], errors: list[str]) -> None:
                 errors.append(f"{fid}: depends_on unknown feature {dep}")
             elif dep == fid:
                 errors.append(f"{fid}: depends on itself")
+        evidence = f.get("evidence") or []
+        if len(evidence) > EVIDENCE_MAX_ITEMS:
+            errors.append(f"{fid}: {len(evidence)} evidence items (max {EVIDENCE_MAX_ITEMS}); link to a PR or CI run instead")
+        for item in evidence:
+            if isinstance(item, str) and len(item) > EVIDENCE_MAX_CHARS:
+                errors.append(
+                    f"{fid}: evidence item of {len(item)} chars (max {EVIDENCE_MAX_CHARS}); "
+                    "record a pointer (PR, CI run, test name), not pasted output"
+                )
         if status == "passing":
             if not f.get("evidence"):
                 errors.append(f"{fid}: passing requires recorded evidence")
@@ -176,6 +231,18 @@ def _cycles(by_id: dict[str, dict], errors: list[str]) -> None:
     for fid in by_id:
         if fid not in state:
             visit(fid, [])
+
+
+def _progress(root: Path, errors: list[str]) -> None:
+    path = root / "claude-progress.md"
+    if not path.exists():
+        return
+    sessions = len(SESSION_HEADING.findall(path.read_text()))
+    if sessions > PROGRESS_MAX_SESSIONS:
+        errors.append(
+            f"claude-progress.md: {sessions} session entries (max {PROGRESS_MAX_SESSIONS}); "
+            "move the oldest to docs/progress/YYYY-MM.md"
+        )
 
 
 def _module_agents(root: Path, errors: list[str]) -> None:

@@ -1,8 +1,9 @@
 # Progress Log
 
 Read the Current Verified State at the start of every session; update it and
-add a session entry before you stop. (The filename is a harness convention; any
-agent uses it.)
+add a session entry before you stop. Only the last 5 sessions stay here
+(`check_harness.py` enforces it); older ones move to `docs/progress/YYYY-MM.md`.
+(The filename is a harness convention; any agent uses it.)
 
 ## Current Verified State
 
@@ -81,3 +82,12 @@ agent uses it.)
 - Known risk or unresolved issue: agents act through the owner's GitHub account, so they cannot approve a PR. If branch protection on `main` requires an approving review on every PR, the builder's merge of an agent-owned PR will be refused; the rule then says to leave the PR ready and note it in the handoff. Only the owner can check or change that setting. This PR itself touches human-owned paths, so the owner merges it.
 - Next best step: m0-002.
 
+### Session 005 (harness)
+
+- Date: 2026-11-26
+- Goal: keep the files every session reads from growing with the project (owner request).
+- Completed: `DECISIONS.md` keeps open entries in full and decided ones as one line each; the full decided text moved to `docs/decisions/archive.md`. `claude-progress.md` keeps the last 5 sessions; older ones go to `docs/progress/YYYY-MM.md`. Evidence items are capped at 400 characters and 15 per feature. Fully passing milestones move to `docs/features/<milestone>.json`, which `check_harness.py` and `session-brief.sh` also read. `AGENTS.md` end-of-session steps, the clean-state checklist and `docs/harness/README.md` describe the new rules.
+- Verification run: `python3 scripts/check_harness.py` and its unit tests (25, including 12 new canaries). `mise` was not available in this container, so `just check` runs in CI only; no Go code changed.
+- Commits: `chore(harness): cap the size of files read at session start`.
+- Known risk or unresolved issue: none. PR #17 merged first; its D-002 update was carried into `docs/decisions/archive.md` and the one-line D-002 and D-008 entries when merging main.
+- Next best step: m0-002.

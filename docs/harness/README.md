@@ -69,8 +69,11 @@ every PR (only code-owner review and passing CI).
 | File | Purpose | Updated by |
 | --- | --- | --- |
 | `AGENTS.md` (root) | Operating rules every session follows | Human-owned; agents propose changes by PR |
-| `feature_list.json` | Backlog and feature state | Builders |
-| `claude-progress.md` | Current verified state + session log | Every session |
+| `feature_list.json` | Backlog and feature state for unfinished milestones | Builders |
+| `docs/features/<milestone>.json` | Archived features of fully passing milestones | Builders, when a milestone completes |
+| `claude-progress.md` | Current verified state + last 5 sessions | Every session |
+| `docs/progress/YYYY-MM.md` | Older session entries | Every session, when trimming |
+| `docs/decisions/archive.md` | Full text of decided entries | Agents, when recording an answer |
 | `session-handoff.md` | Compact note for the very next session | Every session (overwritten) |
 | `DECISIONS.md` + `needs-human` issues | Human decision queue | Agents ask in both; human answers on the issue |
 | `docs/harness/evaluator-rubric.md` | Review scorecard | Reviewer uses; gardener tunes |
@@ -78,6 +81,15 @@ every PR (only code-owner review and passing CI).
 | `docs/harness/clean-state-checklist.md` | End-of-session checklist | Every session |
 | `internal/<module>/AGENTS.md` | Module purpose, invariants, imports, tests | Builders, from `module-agents-template.md` |
 | `docs/adr/` | Architecture decisions | Agents propose, human approves |
+
+## Keeping startup reads small
+
+Every session reads `AGENTS.md`, `claude-progress.md`, `session-handoff.md`
+and `DECISIONS.md`, and queries `feature_list.json`. Those files must not grow
+with the age of the project, so `check_harness.py` caps them: at most 5
+sessions in the progress log, decided decisions as one line each, evidence as
+short pointers, and finished milestones archived. Archives are read only when
+someone needs the history. Git history remains the complete record.
 
 ## Tuning the harness
 
